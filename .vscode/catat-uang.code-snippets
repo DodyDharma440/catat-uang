@@ -1,0 +1,8 @@
+{
+    "Export Default As": {
+        "prefix": "exdefas",
+        "body": [
+            "export { default as $1 } from \"./$1\""
+        ]
+    },
+}

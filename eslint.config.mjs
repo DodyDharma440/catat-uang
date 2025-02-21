@@ -102,6 +102,7 @@ export default [
       "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-shadow": "warn",
       "@typescript-eslint/space-before-function-paren": "off",
+      "@typescript-eslint/no-require-imports": "off",
       ...reactHooks.configs.recommended.rules,
     },
   },
