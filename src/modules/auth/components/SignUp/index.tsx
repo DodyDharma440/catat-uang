@@ -1,40 +1,55 @@
 import React from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-
-import { useRouter } from "expo-router";
 
 import { Button, Input, Typography } from "@/common/components";
 import theme from "@/common/configs/theme";
 
 import { useAuthScreen } from "../../contexts";
-import type { ISignInForm } from "../../interfaces";
+import type { ISignUpForm } from "../../interfaces";
 
-const SignIn = () => {
-  const { push } = useRouter();
+const SignUp = () => {
   const { setMode } = useAuthScreen();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<ISignInForm>();
+  } = useForm<ISignUpForm>();
+  const passwordValue = useWatch({ control, name: "password" });
 
-  const submitHandler = (values: ISignInForm) => {
-    push("/dashboard");
-  };
+  const submitHandler = (values: ISignUpForm) => {};
 
   return (
     <View style={styles.root}>
       <Typography fontWeight="700" style={styles.title}>
-        Selamat Datang!
+        Buat Akun Baru
       </Typography>
       <Typography fontWeight="500" style={styles.subtitle}>
-        Silahkan login untuk melanjutkan
+        Isi semua form field untuk melanjutkan
       </Typography>
 
       <View style={styles.form}>
+        <Controller
+          control={control}
+          name="name"
+          rules={{
+            required: "Nama harus diisi",
+          }}
+          render={({ field }) => {
+            return (
+              <Input
+                {...field}
+                onChangeText={field.onChange}
+                label="Nama"
+                placeholder="Nama"
+                isRequired
+                errorMessage={errors.name?.message}
+              />
+            );
+          }}
+        />
         <Controller
           control={control}
           name="email"
@@ -84,6 +99,31 @@ const SignIn = () => {
             );
           }}
         />
+        <Controller
+          control={control}
+          name="confirmPassword"
+          rules={{
+            required: "Konfirmasi Password harus diisi",
+            validate: (val) => {
+              return passwordValue !== val
+                ? "Konfirmasi Password tidak cocok"
+                : false;
+            },
+          }}
+          render={({ field }) => {
+            return (
+              <Input
+                {...field}
+                onChangeText={field.onChange}
+                label="Konfirmasi Password"
+                placeholder="Konfirmasi Password"
+                isRequired
+                secureTextEntry
+                errorMessage={errors.confirmPassword?.message}
+              />
+            );
+          }}
+        />
       </View>
 
       <Button
@@ -91,13 +131,13 @@ const SignIn = () => {
         fullWidth
         style={{ marginBottom: 6 }}
       >
-        Login
+        Daftar
       </Button>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Typography>Belum punya akun? </Typography>
-        <TouchableOpacity onPress={() => setMode("sign-up")}>
+        <Typography>Sudah punya akun? </Typography>
+        <TouchableOpacity onPress={() => setMode("sign-in")}>
           <Typography fontWeight="700" style={{ color: theme.colors.primary }}>
-            Daftar
+            Login
           </Typography>
         </TouchableOpacity>
       </View>
@@ -130,4 +170,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignIn;
+export default SignUp;

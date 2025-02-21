@@ -75,7 +75,7 @@ const GetStarted = () => {
         commodo consequat.
       </Typography>
 
-      <Link href="/sign-in" asChild>
+      <Link href="/auth" asChild>
         <Button fullWidth>Mulai Sekarang</Button>
       </Link>
     </View>
