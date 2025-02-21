@@ -22,16 +22,14 @@ type TypographyProps = {
 } & TextProps;
 
 const Typography = forwardRef<Text, TypographyProps>(
-  ({ children, style, fontWeight, ...props }, ref) => {
+  ({ children, style, fontWeight = "400", ...props }, ref) => {
     return (
       <Text
         ref={ref}
         {...props}
         style={[
           {
-            fontFamily: `Inter_${fontWeight}${
-              weightNames[fontWeight ?? "400"]
-            }`,
+            fontFamily: `Inter_${fontWeight}${weightNames[fontWeight]}`,
           },
           style,
         ]}

@@ -4,6 +4,7 @@ import { Animated, StyleSheet, useAnimatedValue, View } from "react-native";
 import { LinearGradient } from "react-native-gradients";
 
 import { useTheme } from "@react-navigation/native";
+import { Link } from "expo-router";
 
 import { Button, Typography } from "@/common/components";
 
@@ -74,7 +75,9 @@ const GetStarted = () => {
         commodo consequat.
       </Typography>
 
-      <Button fullWidth>Mulai Sekarang</Button>
+      <Link href="/sign-in" asChild>
+        <Button fullWidth>Mulai Sekarang</Button>
+      </Link>
     </View>
   );
 };
