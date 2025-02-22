@@ -1,18 +1,24 @@
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { useRouter } from "expo-router";
+import { StackActions } from "@react-navigation/native";
+import { useNavigationContainerRef, useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "firebase-config";
 
 import { Button, Input, Typography } from "@/common/components";
 import theme from "@/common/configs/theme";
 
-import { useAuthScreen } from "../../contexts";
+import { useAuthScreen, useUserAuth } from "../../contexts";
 import type { ISignInForm } from "../../interfaces";
 
 const SignIn = () => {
-  const { push } = useRouter();
+  const router = useRouter();
+  const rootNavigation = useNavigationContainerRef();
+
+  const { setUser } = useUserAuth();
   const { setMode } = useAuthScreen();
 
   const {
@@ -21,8 +27,19 @@ const SignIn = () => {
     formState: { errors },
   } = useForm<ISignInForm>();
 
-  const submitHandler = (values: ISignInForm) => {
-    push("/dashboard");
+  const submitHandler = async (values: ISignInForm) => {
+    try {
+      const { user } = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      setUser(user);
+      rootNavigation.dispatch(StackActions.popToTop());
+      router.replace("/dashboard");
+    } catch (err: any) {
+      Alert.alert("Error", err.message);
+    }
   };
 
   return (

@@ -1,15 +1,24 @@
 import React from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+
+import { StackActions } from "@react-navigation/native";
+import { useNavigationContainerRef, useRouter } from "expo-router";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "firebase-config";
 
 import { Button, Input, Typography } from "@/common/components";
 import theme from "@/common/configs/theme";
 
-import { useAuthScreen } from "../../contexts";
+import { useAuthScreen, useUserAuth } from "../../contexts";
 import type { ISignUpForm } from "../../interfaces";
 
 const SignUp = () => {
+  const rootNavigation = useNavigationContainerRef();
+  const router = useRouter();
+
+  const { setUser } = useUserAuth();
   const { setMode } = useAuthScreen();
 
   const {
@@ -19,7 +28,21 @@ const SignUp = () => {
   } = useForm<ISignUpForm>();
   const passwordValue = useWatch({ control, name: "password" });
 
-  const submitHandler = (values: ISignUpForm) => {};
+  const submitHandler = async (values: ISignUpForm) => {
+    try {
+      const { user } = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      await updateProfile(user, { displayName: values.name });
+      setUser({ ...user, displayName: values.name });
+      rootNavigation.dispatch(StackActions.popToTop());
+      router.replace("/dashboard");
+    } catch (err: any) {
+      Alert.alert("Error", err.message);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -107,7 +130,7 @@ const SignUp = () => {
             validate: (val) => {
               return passwordValue !== val
                 ? "Konfirmasi Password tidak cocok"
-                : false;
+                : undefined;
             },
           }}
           render={({ field }) => {
