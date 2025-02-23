@@ -1,22 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { StackActions } from "@react-navigation/native";
-import { useNavigationContainerRef, useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "firebase-config";
 
 import { Button, Input, Typography } from "@/common/components";
 import theme from "@/common/configs/theme";
+import { useRemoveAndReplace } from "@/common/hooks";
 
 import { useAuthScreen, useUserAuth } from "../../contexts";
 import type { ISignInForm } from "../../interfaces";
 
 const SignIn = () => {
-  const router = useRouter();
-  const rootNavigation = useNavigationContainerRef();
+  const { removeAndReplace } = useRemoveAndReplace();
 
   const { setUser } = useUserAuth();
   const { setMode } = useAuthScreen();
@@ -26,8 +24,10 @@ const SignIn = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<ISignInForm>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const submitHandler = async (values: ISignInForm) => {
+    setIsLoading(true);
     try {
       const { user } = await signInWithEmailAndPassword(
         auth,
@@ -35,10 +35,11 @@ const SignIn = () => {
         values.password
       );
       setUser(user);
-      rootNavigation.dispatch(StackActions.popToTop());
-      router.replace("/dashboard");
+      removeAndReplace("/dashboard");
+      setIsLoading(false);
     } catch (err: any) {
       Alert.alert("Error", err.message);
+      setIsLoading(false);
     }
   };
 
@@ -107,6 +108,7 @@ const SignIn = () => {
         onPress={handleSubmit(submitHandler)}
         fullWidth
         style={{ marginBottom: 6 }}
+        isLoading={isLoading}
       >
         Login
       </Button>

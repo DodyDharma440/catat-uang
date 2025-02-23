@@ -1,22 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { StackActions } from "@react-navigation/native";
-import { useNavigationContainerRef, useRouter } from "expo-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "firebase-config";
 
 import { Button, Input, Typography } from "@/common/components";
 import theme from "@/common/configs/theme";
+import { useRemoveAndReplace } from "@/common/hooks";
 
 import { useAuthScreen, useUserAuth } from "../../contexts";
 import type { ISignUpForm } from "../../interfaces";
 
 const SignUp = () => {
-  const rootNavigation = useNavigationContainerRef();
-  const router = useRouter();
+  const { removeAndReplace } = useRemoveAndReplace();
 
   const { setUser } = useUserAuth();
   const { setMode } = useAuthScreen();
@@ -28,7 +26,11 @@ const SignUp = () => {
   } = useForm<ISignUpForm>();
   const passwordValue = useWatch({ control, name: "password" });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const submitHandler = async (values: ISignUpForm) => {
+    setIsLoading(true);
+
     try {
       const { user } = await createUserWithEmailAndPassword(
         auth,
@@ -37,10 +39,11 @@ const SignUp = () => {
       );
       await updateProfile(user, { displayName: values.name });
       setUser({ ...user, displayName: values.name });
-      rootNavigation.dispatch(StackActions.popToTop());
-      router.replace("/dashboard");
+      removeAndReplace("/dashboard");
+      setIsLoading(false);
     } catch (err: any) {
       Alert.alert("Error", err.message);
+      setIsLoading(false);
     }
   };
 
@@ -153,6 +156,7 @@ const SignUp = () => {
         onPress={handleSubmit(submitHandler)}
         fullWidth
         style={{ marginBottom: 6 }}
+        isLoading={isLoading}
       >
         Daftar
       </Button>
