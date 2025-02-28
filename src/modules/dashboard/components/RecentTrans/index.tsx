@@ -1,6 +1,6 @@
 import React from "react";
 
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { useTheme } from "@react-navigation/native";
 
@@ -11,10 +11,8 @@ const RecentTrans = () => {
 
   return (
     <View>
-      <View
-        style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}
-      >
-        <Typography fontWeight="700" style={{ fontSize: 20, flex: 1 }}>
+      <View style={styles.header}>
+        <Typography fontWeight="700" style={styles.title}>
           Transaksi Terbaru
         </Typography>
         <Button isCompact variant="subtle" color="secondary">
@@ -29,30 +27,26 @@ const RecentTrans = () => {
           return (
             <View
               key={i}
-              style={{
-                borderRadius: 8,
-                borderWidth: 1,
-                borderStyle: "solid",
-                borderColor: theme.colors.border,
-                padding: 16,
-                flexDirection: "row",
-                alignItems: "center",
-              }}
+              style={[
+                styles.card,
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.card,
+                },
+              ]}
             >
               <View style={{ flex: 1 }}>
-                <Typography
-                  fontWeight="700"
-                  style={{ fontSize: 18, marginBottom: 2 }}
-                >
+                <Typography fontWeight="700" style={styles.cardTitle}>
                   Title Pengeluaran
                 </Typography>
                 <Typography
                   fontWeight="700"
-                  style={{
-                    fontSize: 16,
-                    color: theme.colors[isPlus ? "red" : "green"],
-                    marginBottom: 2,
-                  }}
+                  style={[
+                    styles.valueText,
+                    {
+                      color: theme.colors[isPlus ? "green" : "red"],
+                    },
+                  ]}
                 >
                   {isPlus ? "+" : "-"} Rp 10.000
                 </Typography>
@@ -74,5 +68,33 @@ const RecentTrans = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  title: {
+    fontSize: 20,
+    flex: 1,
+  },
+  card: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: "solid",
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  cardTitle: {
+    fontSize: 18,
+    marginBottom: 2,
+  },
+  valueText: {
+    fontSize: 16,
+    marginBottom: 2,
+  },
+});
 
 export default RecentTrans;

@@ -1,10 +1,11 @@
 import React from "react";
 
-import { TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
+import { Link } from "expo-router";
 
 import { Avatar, Typography } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
@@ -15,28 +16,15 @@ const Navbar = () => {
   const theme = useTheme();
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 12,
-      }}
-    >
+    <View style={styles.root}>
       <Avatar name={user?.displayName} />
 
       <View style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}>
         <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            borderWidth: 1,
-            borderColor: opacityColor(theme.colors.primary, 10),
-            borderRadius: 100,
-            paddingLeft: 16,
-            paddingRight: 12,
-            paddingVertical: 8,
-            alignItems: "center",
-            gap: 6,
-          }}
+          style={[
+            styles.monthFilter,
+            { borderColor: opacityColor(theme.colors.primary, 10) },
+          ]}
         >
           <Typography fontWeight="600">Februari 2025</Typography>
           <Ionicons
@@ -48,11 +36,31 @@ const Navbar = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={{ borderRadius: "50%" }}>
-        <Icon name="cog" size={24} color={theme.colors.gray} />
-      </TouchableOpacity>
+      <Link href="/settings" asChild>
+        <TouchableOpacity style={{ borderRadius: "50%" }}>
+          <Icon name="cog" size={24} color={theme.colors.gray} />
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  root: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  monthFilter: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderRadius: 100,
+    paddingLeft: 16,
+    paddingRight: 12,
+    paddingVertical: 8,
+    alignItems: "center",
+    gap: 6,
+  },
+});
 
 export default Navbar;

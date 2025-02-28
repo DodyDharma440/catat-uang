@@ -5,14 +5,14 @@ export const tabItems = [
     title: "Beranda",
   },
   {
+    name: "transactions",
+    iconName: "swap-horizontal",
+    title: "Transaksi",
+  },
+  {
     name: "calendar",
     iconName: "calendar",
     title: "Kalender",
-  },
-  {
-    name: "analytics",
-    iconName: "analytics",
-    title: "Analytics",
   },
   {
     name: "settings",

@@ -6,6 +6,7 @@ const theme: Theme = {
   dark: false,
   colors: {
     ...DefaultTheme.colors,
+    background: "#FBFBFB",
     primary: "#803dff",
     secondary: "#F469A9",
     blue: "#2D77F1",

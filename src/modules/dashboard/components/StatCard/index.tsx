@@ -1,7 +1,7 @@
 import React, { forwardRef } from "react";
 
 import type { ViewProps } from "react-native";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import type { ColorsKey } from "@react-navigation/native";
 import { useTheme } from "@react-navigation/native";
@@ -22,29 +22,15 @@ const StatCard = forwardRef<View, StatCardProps>(
     return (
       <View
         style={[
-          {
-            flex: 1,
-            backgroundColor: theme.colors[color ?? "gray"],
-            borderRadius: 16,
-            flexDirection: "row",
-            padding: 16,
-            gap: 12,
-            alignItems: "center",
-          },
+          styles.root,
+          { backgroundColor: theme.colors[color ?? "gray"] },
           style,
         ]}
         {...props}
         ref={ref}
       >
         <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: theme.colors.white,
-            borderRadius: 8,
-            width: 36,
-            height: 36,
-          }}
+          style={[styles.iconWrapper, { backgroundColor: theme.colors.white }]}
         >
           {icon(theme.colors[color])}
         </View>
@@ -64,5 +50,23 @@ const StatCard = forwardRef<View, StatCardProps>(
     );
   }
 );
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    borderRadius: 16,
+    flexDirection: "row",
+    padding: 16,
+    gap: 12,
+    alignItems: "center",
+  },
+  iconWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    width: 36,
+    height: 36,
+  },
+});
 
 export default StatCard;
