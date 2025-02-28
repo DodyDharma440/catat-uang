@@ -1,17 +1,25 @@
 import "@react-navigation/native";
 
 declare module "@react-navigation/native" {
+  export type ColorsKey =
+    | "primary"
+    | "secondary"
+    | "background"
+    | "card"
+    | "text"
+    | "border"
+    | "notification"
+    | "blue"
+    | "white"
+    | "green"
+    | "yellow"
+    | "red"
+    | "gray"
+    | "black";
+
   interface NativeTheme {
     dark: boolean;
-    colors: {
-      primary: string;
-      secondary: string;
-      background: string;
-      card: string;
-      text: string;
-      border: string;
-      notification: string;
-    };
+    colors: Record<ColorsKey, string>;
     fonts: {
       regular: FontStyle;
       medium: FontStyle;
