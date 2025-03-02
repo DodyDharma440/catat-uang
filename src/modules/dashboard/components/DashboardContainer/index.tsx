@@ -3,6 +3,8 @@ import React, { useMemo } from "react";
 import { ScrollView } from "react-native";
 import FeatherIcon from "react-native-vector-icons/Feather";
 
+import { Link } from "expo-router";
+
 import { Button, Container, Typography } from "@/common/components";
 import { useUserAuth } from "@/modules/auth/contexts";
 
@@ -26,14 +28,16 @@ const DashboardContainer = () => {
         </Typography>
         <Stats />
 
-        <Button
-          variant="light"
-          leftIcon={(style) => (
-            <FeatherIcon name="plus" style={style} size={16} />
-          )}
-        >
-          Tambah Catatan
-        </Button>
+        <Link href="/transactions/add" asChild>
+          <Button
+            variant="light"
+            leftIcon={(style) => (
+              <FeatherIcon name="plus" style={style} size={16} />
+            )}
+          >
+            Tambah Catatan
+          </Button>
+        </Link>
 
         <RecentTrans />
       </Container>

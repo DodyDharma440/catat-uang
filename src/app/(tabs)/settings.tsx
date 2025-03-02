@@ -2,6 +2,7 @@ import React from "react";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { withAuth } from "@/common/hocs";
 import { SettingsContainer } from "@/modules/settings/components";
 
 const SettingsScreen = () => {
@@ -12,4 +13,4 @@ const SettingsScreen = () => {
   );
 };
 
-export default SettingsScreen;
+export default withAuth(SettingsScreen);
