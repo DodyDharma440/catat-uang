@@ -80,9 +80,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderStyle: "solid",
+    borderRadius: 16,
     padding: 16,
     flexDirection: "row",
     alignItems: "center",

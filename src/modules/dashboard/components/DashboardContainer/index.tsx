@@ -12,6 +12,7 @@ import Stats from "../Stats";
 
 const DashboardContainer = () => {
   const { user } = useUserAuth();
+
   const displayName = useMemo(() => {
     return user?.displayName?.split(" ").slice(0, 2).join(" ");
   }, [user?.displayName]);
