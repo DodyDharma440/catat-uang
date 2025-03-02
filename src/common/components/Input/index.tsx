@@ -6,6 +6,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
 
+import { opacityColor } from "@/common/utils/colors";
+
 import Typography from "../Typography";
 
 type InputProps = {
@@ -36,20 +38,26 @@ const Input = forwardRef<TextInput, InputProps>(
     return (
       <View>
         <View style={styles.labelWrapper}>
-          <Typography fontWeight="600" style={styles.label}>
-            {label}
-          </Typography>
-          {isRequired ? (
-            <Typography style={{ color: theme.colors.notification }}>
-              *
-            </Typography>
+          {label ? (
+            <>
+              <Typography fontWeight="600" style={styles.label}>
+                {label}
+              </Typography>
+              {isRequired ? (
+                <Typography style={{ color: theme.colors.notification }}>
+                  *
+                </Typography>
+              ) : null}
+            </>
           ) : null}
         </View>
         <View
           style={[
             styles.wrapper,
             {
-              borderColor: errorMessage ? theme.colors.notification : "#999999",
+              borderColor: errorMessage
+                ? theme.colors.notification
+                : opacityColor(theme.colors.gray, 20),
             },
           ]}
         >
@@ -59,7 +67,9 @@ const Input = forwardRef<TextInput, InputProps>(
             secureTextEntry={secureTextEntry && !isPasswordShow}
             style={[styles.input, style]}
             placeholderTextColor={
-              errorMessage ? theme.colors.notification : undefined
+              errorMessage
+                ? theme.colors.red
+                : opacityColor(theme.colors.gray, 50)
             }
             {...(secureTextEntry
               ? {

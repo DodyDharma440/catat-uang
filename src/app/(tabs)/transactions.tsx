@@ -1,9 +1,9 @@
 import React from "react";
 
-import { Text } from "react-native";
+import { TransContainer } from "@/modules/transactions/components";
 
 const TransactionsScreen = () => {
-  return <Text>TransactionsScreen</Text>;
+  return <TransContainer />;
 };
 
 export default TransactionsScreen;
