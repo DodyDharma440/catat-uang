@@ -40,7 +40,7 @@ const Navbar = () => {
       <View>
         <MonthSelector />
       </View>
-      <Link href="/transactions/add" asChild>
+      <Link href="/transactions/add?transType=income" asChild>
         <TouchableOpacity>
           <View
             style={{

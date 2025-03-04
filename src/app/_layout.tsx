@@ -15,6 +15,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { ThemeProvider } from "@react-navigation/native";
+import dayjs from "dayjs";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
@@ -22,6 +23,9 @@ import theme from "@/common/configs/theme";
 import { UserAuthProvider } from "@/modules/auth/contexts";
 
 import "react-native-reanimated";
+import "dayjs/locale/id";
+
+dayjs.locale("id");
 
 SplashScreen.preventAutoHideAsync();
 

@@ -10,7 +10,7 @@ import { opacityColor } from "@/common/utils/colors";
 
 import Typography from "../Typography";
 
-type InputProps = {
+export type InputProps = {
   leftContent?: React.ReactNode;
   rightContent?: React.ReactNode;
   label?: string;
