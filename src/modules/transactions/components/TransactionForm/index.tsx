@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,8 +17,10 @@ import {
   Typography,
 } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
+import { thousandsFormat } from "@/common/utils/number-format";
 
 import { useGetCategories } from "../../hooks";
+import type { ITransactionForm, TransactionType } from "../../interfaces";
 
 const TransactionForm = () => {
   const router = useRouter();
@@ -26,10 +29,26 @@ const TransactionForm = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { categories } = useGetCategories();
+  const { categories } = useGetCategories({
+    transType: (transType ?? "expense") as TransactionType,
+  });
   const categoryOptions = useMemo(() => {
     return categories.map((c) => ({ label: c?.name, value: c?.id }));
   }, [categories]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ITransactionForm>({
+    defaultValues: {
+      date: new Date().toISOString(),
+    },
+  });
+
+  const submitHandler = (values: ITransactionForm) => {
+    console.log(values);
+  };
 
   return (
     <View style={{ minHeight: "100%" }}>
@@ -81,52 +100,113 @@ const TransactionForm = () => {
       >
         <ScrollView>
           <View style={{ gap: 16 }}>
-            <Input
-              label="Nominal"
-              keyboardType="numeric"
-              isRequired
-              placeholder="Masukkan nominal"
-              leftContent={
-                <Typography
-                  style={{ paddingLeft: 6, transform: [{ translateY: -1 }] }}
-                >
-                  Rp
-                </Typography>
-              }
+            <Controller
+              control={control}
+              name="amount"
+              rules={{
+                required: "Nominal harus diisi",
+              }}
+              render={({ field }) => {
+                return (
+                  <Input
+                    {...field}
+                    value={thousandsFormat(field.value, ".")}
+                    onChangeText={(e) =>
+                      field.onChange(Number(e.replaceAll(".", "")))
+                    }
+                    label="Nominal"
+                    keyboardType="numeric"
+                    isRequired
+                    placeholder="Masukkan nominal"
+                    errorMessage={errors.amount?.message}
+                    leftContent={
+                      <Typography
+                        style={{
+                          paddingLeft: 6,
+                          transform: [{ translateY: -1 }],
+                        }}
+                      >
+                        Rp
+                      </Typography>
+                    }
+                  />
+                );
+              }}
             />
 
-            <DatePicker
-              label="Tanggal"
-              placeholder="Pilih tanggal"
-              pickerProps={{ mode: "datetime" }}
+            <Controller
+              control={control}
+              name="date"
+              rules={{
+                required: "Tanggal harus dipilih",
+              }}
+              render={({ field }) => {
+                return (
+                  <DatePicker
+                    {...field}
+                    isRequired
+                    value={field.value ? new Date(field.value) : undefined}
+                    onChange={(v) => field.onChange(v.toISOString())}
+                    label="Tanggal"
+                    errorMessage={errors.date?.message}
+                    placeholder="Pilih tanggal"
+                    pickerProps={{ mode: "datetime" }}
+                  />
+                );
+              }}
             />
 
-            <View
-              style={{ flexDirection: "row", gap: 8, alignItems: "center" }}
-            >
-              <Select
-                options={categoryOptions}
-                label="Kategori"
-                placeholder="Pilih kategori"
-                style={{ flex: 1 }}
-              />
-              <Button isCompact style={{ marginTop: 24 }}>
-                <IonIcon name="add" size={16} />
-              </Button>
-            </View>
+            <Controller
+              control={control}
+              name="category"
+              rules={{
+                required: "Kategori harus dipilih",
+              }}
+              render={({ field }) => {
+                return (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 8,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Select
+                      isRequired
+                      options={categoryOptions}
+                      label="Kategori"
+                      placeholder="Pilih kategori"
+                      style={{ flex: 1 }}
+                      errorMessage={errors.category?.message}
+                      {...field}
+                    />
+                    <Button isCompact style={{ marginTop: 24 }}>
+                      <IonIcon name="add" size={16} />
+                    </Button>
+                  </View>
+                );
+              }}
+            />
 
-            <Input
-              label="Catatan"
-              multiline
-              style={{ height: 120, textAlignVertical: "top" }}
-              placeholder="Masukkan catatan"
+            <Controller
+              control={control}
+              name="note"
+              render={({ field }) => {
+                return (
+                  <Input
+                    label="Catatan"
+                    multiline
+                    style={{ height: 120, textAlignVertical: "top" }}
+                    placeholder="Masukkan catatan"
+                    {...field}
+                    onChangeText={(e) => field.onChange(e)}
+                  />
+                );
+              }}
             />
           </View>
         </ScrollView>
-        <Button
-          style={{ marginTop: 20 }}
-          // color={transType === "income" ? "primary" : "secondary"}
-        >
+        <Button style={{ marginTop: 20 }} onPress={handleSubmit(submitHandler)}>
           Simpan
         </Button>
       </View>

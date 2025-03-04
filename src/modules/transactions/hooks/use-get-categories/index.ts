@@ -5,15 +5,22 @@ import { db } from "firebase-config";
 
 import { useUserAuth } from "@/modules/auth/contexts";
 
-import type { ICategory } from "../../interfaces";
+import type { ICategory, TransactionType } from "../../interfaces";
 
-export const useGetCategories = () => {
+type UseGetCategoriesProps = {
+  transType: TransactionType;
+};
+
+export const useGetCategories = ({ transType }: UseGetCategoriesProps) => {
   const { user } = useUserAuth();
   const [categories, setCategories] = useState<ICategory[]>([]);
 
   useEffect(() => {
     const handleGetCategories = async () => {
-      const collectionRef = collection(db, "categories");
+      const collectionRef = collection(
+        db,
+        transType === "income" ? "income_categories" : "categories"
+      );
       const qAll = query(collectionRef, where("userId", "==", ""));
       const qUser = query(collectionRef, where("userId", "==", user?.uid));
 
@@ -23,13 +30,19 @@ export const useGetCategories = () => {
         const querySnapshot = await getDocs(qAll);
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          _categories.push(data as ICategory);
+          _categories.push({
+            ...(data as ICategory),
+            id: doc.id,
+          });
         });
 
         const querySnapshotUser = await getDocs(qUser);
         querySnapshotUser.forEach((doc) => {
           const data = doc.data();
-          _categories.push(data as ICategory);
+          _categories.push({
+            ...(data as ICategory),
+            id: doc.id,
+          });
         });
 
         _categories.sort(
@@ -49,7 +62,7 @@ export const useGetCategories = () => {
     };
 
     handleGetCategories();
-  }, [user?.uid]);
+  }, [transType, user?.uid]);
 
   return { categories };
 };

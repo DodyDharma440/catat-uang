@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo } from "react";
 
 import type { StyleProp, TextInput, ViewStyle } from "react-native";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import SelectDropdown from "react-native-select-dropdown";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
@@ -119,7 +119,7 @@ const Select = forwardRef<TextInput, SelectProps>(
           dropdownStyle={{
             backgroundColor: theme.colors.white,
             borderRadius: 8,
-            marginTop: -30,
+            marginTop: Platform.OS === "ios" ? 0 : -30,
           }}
         />
       </View>
