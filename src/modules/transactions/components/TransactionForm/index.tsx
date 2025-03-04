@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,12 +17,19 @@ import {
 } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 
+import { useGetCategories } from "../../hooks";
+
 const TransactionForm = () => {
   const router = useRouter();
   const { transType } = useLocalSearchParams<{ transType?: string }>();
 
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+
+  const { categories } = useGetCategories();
+  const categoryOptions = useMemo(() => {
+    return categories.map((c) => ({ label: c?.name, value: c?.id }));
+  }, [categories]);
 
   return (
     <View style={{ minHeight: "100%" }}>
@@ -98,10 +105,7 @@ const TransactionForm = () => {
               style={{ flexDirection: "row", gap: 8, alignItems: "center" }}
             >
               <Select
-                options={[
-                  { label: "Makanan", value: "makanan" },
-                  { label: "Minuman", value: "minuman" },
-                ]}
+                options={categoryOptions}
                 label="Kategori"
                 placeholder="Pilih kategori"
                 style={{ flex: 1 }}
