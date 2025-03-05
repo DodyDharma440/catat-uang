@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -34,11 +34,7 @@ const TransContainer = () => {
         </Container>
       </View>
       <SafeAreaView edges={["bottom", "left", "right"]}>
-        <ScrollView>
-          <Container>
-            <TransList />
-          </Container>
-        </ScrollView>
+        <TransList />
       </SafeAreaView>
     </>
   );
