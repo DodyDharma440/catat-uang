@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -8,6 +8,8 @@ import IonIcon from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { addDoc, collection, doc } from "firebase/firestore";
+import { db } from "firebase-config";
 
 import {
   Button,
@@ -18,16 +20,19 @@ import {
 } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 import { thousandsFormat } from "@/common/utils/number-format";
+import { useUserAuth } from "@/modules/auth/contexts";
 
 import { useGetCategories } from "../../hooks";
 import type { ITransactionForm, TransactionType } from "../../interfaces";
 
 const TransactionForm = () => {
-  const router = useRouter();
+  const { push, dismissTo } = useRouter();
   const { transType } = useLocalSearchParams<{ transType?: string }>();
 
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+
+  const { user } = useUserAuth();
 
   const { categories } = useGetCategories({
     transType: (transType ?? "expense") as TransactionType,
@@ -36,6 +41,7 @@ const TransactionForm = () => {
     return categories.map((c) => ({ label: c?.name, value: c?.id }));
   }, [categories]);
 
+  const [isLoading, setIsLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -46,8 +52,30 @@ const TransactionForm = () => {
     },
   });
 
-  const submitHandler = (values: ITransactionForm) => {
-    console.log(values);
+  const submitHandler = async (values: ITransactionForm) => {
+    setIsLoading(true);
+
+    try {
+      const { category, ...formValues } = values;
+      formValues.type = (transType ?? "income") as TransactionType;
+      const categoryColName =
+        transType === "income" ? "income_categories" : "categories";
+
+      await addDoc(
+        collection(db, "transactions", user?.uid ?? "", "user_transactions"),
+        {
+          ...formValues,
+          category: doc(db, categoryColName, category),
+        }
+      );
+
+      setIsLoading(false);
+      push("/transactions");
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log("🚀 ~ submitHandler ~ error:", error);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -62,7 +90,7 @@ const TransactionForm = () => {
         }}
       >
         <View style={{ flexDirection: "row", padding: 16 }}>
-          <TouchableOpacity onPress={() => router.dismissTo("/transactions")}>
+          <TouchableOpacity onPress={() => dismissTo("/transactions")}>
             <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
           </TouchableOpacity>
           <View
@@ -136,6 +164,25 @@ const TransactionForm = () => {
 
             <Controller
               control={control}
+              name="title"
+              rules={{
+                required: "Berita harus diisi",
+              }}
+              render={({ field }) => {
+                return (
+                  <Input
+                    label="Berita"
+                    placeholder="Berita..."
+                    errorMessage={errors.title?.message}
+                    {...field}
+                    onChangeText={field.onChange}
+                  />
+                );
+              }}
+            />
+
+            <Controller
+              control={control}
               name="date"
               rules={{
                 required: "Tanggal harus dipilih",
@@ -151,6 +198,7 @@ const TransactionForm = () => {
                     errorMessage={errors.date?.message}
                     placeholder="Pilih tanggal"
                     pickerProps={{ mode: "datetime" }}
+                    displayValueFormat="DD MMM YYYY HH:mm"
                   />
                 );
               }}
@@ -206,7 +254,11 @@ const TransactionForm = () => {
             />
           </View>
         </ScrollView>
-        <Button style={{ marginTop: 20 }} onPress={handleSubmit(submitHandler)}>
+        <Button
+          isLoading={isLoading}
+          style={{ marginTop: 20 }}
+          onPress={handleSubmit(submitHandler)}
+        >
           Simpan
         </Button>
       </View>

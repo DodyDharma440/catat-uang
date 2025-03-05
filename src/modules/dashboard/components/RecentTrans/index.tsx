@@ -3,7 +3,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 import { Button, Typography } from "@/common/components";
-import { TransCard } from "@/modules/transactions/components";
+// import { TransCard } from "@/modules/transactions/components";
 
 const RecentTrans = () => {
   return (
@@ -17,13 +17,13 @@ const RecentTrans = () => {
         </Button>
       </View>
 
-      <View style={{ gap: 16 }}>
+      {/* <View style={{ gap: 16 }}>
         {[...Array(10)].map((_, i) => {
           const isPlus = i % 2 === 1;
 
           return <TransCard key={i} isPlus={isPlus} />;
         })}
-      </View>
+      </View> */}
     </View>
   );
 };

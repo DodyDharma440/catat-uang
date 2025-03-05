@@ -1,51 +1,77 @@
 import React from "react";
 
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import IonIcon from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
+import { Link } from "expo-router";
 
-import { Button, Typography } from "@/common/components";
+import { Typography } from "@/common/components";
+import { currencyFormat } from "@/common/utils/number-format";
+
+import type { ITransaction } from "../../interfaces";
 
 type TransCardProps = {
-  isPlus: boolean;
+  transaction: ITransaction;
 };
 
-const TransCard: React.FC<TransCardProps> = ({ isPlus }) => {
+const TransCard: React.FC<TransCardProps> = ({ transaction }) => {
   const theme = useTheme();
+  const isPlus = transaction.type === "income";
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.card,
-        },
-      ]}
-    >
-      <View style={{ flex: 1 }}>
-        <Typography fontWeight="700" style={styles.cardTitle}>
-          Title Pengeluaran
-        </Typography>
-        <Typography
-          fontWeight="700"
+    <Link href={`/transactions/detail/${transaction.id}`} asChild>
+      <TouchableOpacity>
+        <View
           style={[
-            styles.valueText,
+            styles.card,
             {
-              color: theme.colors[isPlus ? "green" : "red"],
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.card,
             },
           ]}
         >
-          {isPlus ? "+" : "-"} Rp 10.000
-        </Typography>
-        <Typography style={{ color: theme.colors.gray }}>
-          Nama kategori
-        </Typography>
-      </View>
-      <Button variant="subtle" isCompact innerStyle={{ paddingHorizontal: 8 }}>
-        Detail
-      </Button>
-    </View>
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              width: 50,
+              height: 50,
+              backgroundColor: transaction.category.color,
+              borderRadius: 12,
+            }}
+          >
+            <IonIcon
+              name={transaction.category.iconName}
+              color={theme.colors.white}
+              size={26}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Typography fontWeight="700" style={styles.cardTitle}>
+              {transaction.title}
+            </Typography>
+
+            <Typography style={{ color: theme.colors.gray }}>
+              {transaction.category.name}
+            </Typography>
+          </View>
+          <View>
+            <Typography
+              fontWeight="700"
+              style={[
+                styles.valueText,
+                {
+                  color: theme.colors[isPlus ? "green" : "red"],
+                },
+              ]}
+            >
+              {isPlus ? "+" : "-"} {currencyFormat(transaction.amount)}
+            </Typography>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Link>
   );
 };
 
@@ -55,10 +81,11 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: "row",
     alignItems: "center",
+    gap: 10,
   },
   cardTitle: {
     fontSize: 18,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   valueText: {
     fontSize: 16,
