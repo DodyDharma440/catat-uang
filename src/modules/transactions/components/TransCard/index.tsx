@@ -53,7 +53,7 @@ const TransCard: React.FC<TransCardProps> = ({ transaction }) => {
             </Typography>
 
             <Typography style={{ color: theme.colors.gray }}>
-              {transaction.category.name}
+              {transaction.time}
             </Typography>
           </View>
           <View>

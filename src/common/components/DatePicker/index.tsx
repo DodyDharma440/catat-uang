@@ -62,6 +62,7 @@ const DatePicker = forwardRef<TextInput, DatePickerProps>(
           accentColor={theme.colors.primary}
           {...pickerProps}
           locale="id-ID"
+          maximumDate={new Date()}
           date={value ?? new Date()}
           onConfirm={(date) => {
             setIsOpen(false);

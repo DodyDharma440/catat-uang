@@ -3,13 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 
 import dayjs from "dayjs";
-import {
-  collection,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-} from "firebase/firestore";
+import type { Unsubscribe } from "firebase/firestore";
+import { collection, getDoc, onSnapshot, query } from "firebase/firestore";
 import { db } from "firebase-config";
 
 import {
@@ -43,17 +38,27 @@ const TransList = () => {
       .map((t) => {
         return {
           ...t,
-          items: t.items.filter((item) => {
-            if (!searchValue) {
-              return true;
-            }
+          items: t.items
+            .filter((item) => {
+              if (!searchValue) {
+                return true;
+              }
 
-            return item.title.toLowerCase().includes(searchValue.toLowerCase());
-          }),
+              return item.title
+                .toLowerCase()
+                .includes(searchValue.toLowerCase());
+            })
+            .sort(
+              (a, b) =>
+                Number(b.time.split(":").join("")) -
+                Number(a.time.split(":").join(""))
+            ),
         };
       })
       .filter((t) => t.items.length);
   }, [searchValue, transactions]);
+
+  const [unsub, setUnsub] = useState<Unsubscribe>();
 
   const { isLoading, errorMessage, setError, startLoading, endLoading } =
     useFetchState();
@@ -61,39 +66,45 @@ const TransList = () => {
   const handleGetTransactions = useCallback(async () => {
     startLoading();
     const q = query(
-      collection(db, "transactions", user?.uid ?? "", "user_transactions"),
-      orderBy("date", "asc")
+      collection(db, "transactions", user?.uid ?? "", "user_transactions")
     );
 
     try {
-      const querySnapshot = await getDocs(q);
-      const grouped: TransactionState = headings.map((h) => ({
-        title: h,
-        items: [],
-      }));
+      const _unsub = onSnapshot(q, async (querySnapshot) => {
+        const grouped: TransactionState = headings.map((h) => ({
+          title: h,
+          items: [],
+        }));
 
-      await Promise.all(
-        querySnapshot.docs.map(async (doc) => {
-          const data = doc.data();
-          const categoryDoc = await getDoc(data.category);
+        await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const data = doc.data();
+            const categoryDoc = await getDoc(data.category);
 
-          const isToday = dayjs(data.date).isSame(dayjs().format("YYYY-MM-DD"));
-          const isYesterday = dayjs(data.date).isSame(
-            dayjs().add(-1, "day").format("YYYY-MM-DD")
-          );
+            const isToday = dayjs(data.date).isSame(
+              dayjs().format("YYYY-MM-DD")
+            );
+            const isYesterday = dayjs(data.date).isSame(
+              dayjs().add(-1, "day").format("YYYY-MM-DD")
+            );
 
-          const index: number = isToday ? 0 : isYesterday ? 1 : 2;
+            const index: number = isToday ? 0 : isYesterday ? 1 : 2;
 
-          grouped[index].items.push({
-            ...(data as ITransaction),
-            category: categoryDoc.data() as ICategory,
-            id: doc.id,
-          });
-        })
-      );
+            grouped[index].items.push({
+              ...(data as ITransaction),
+              category: categoryDoc.data() as ICategory,
+              id: doc.id,
+            });
+          })
+        );
 
-      setTransactions(grouped.filter((g) => g.items.length));
-      endLoading();
+        setTransactions(grouped.filter((g) => g.items.length));
+        endLoading();
+      });
+      setUnsub((prev) => {
+        prev?.();
+        return _unsub;
+      });
     } catch (error) {
       endLoading();
       setError(error);
@@ -103,6 +114,12 @@ const TransList = () => {
   useEffect(() => {
     handleGetTransactions();
   }, [handleGetTransactions]);
+
+  useEffect(() => {
+    return () => {
+      unsub?.();
+    };
+  }, [unsub]);
 
   return (
     <RefreshableScrollView refresher={handleGetTransactions}>

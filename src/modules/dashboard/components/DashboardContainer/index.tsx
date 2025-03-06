@@ -1,12 +1,11 @@
 import React, { useMemo } from "react";
 
 import { ScrollView } from "react-native";
-import FeatherIcon from "react-native-vector-icons/Feather";
-
-import { Link } from "expo-router";
+import IonIcon from "react-native-vector-icons/Ionicons";
 
 import { Button, Container, Typography } from "@/common/components";
 import { useUserAuth } from "@/modules/auth/contexts";
+import { AddButton } from "@/modules/transactions/components";
 
 import Navbar from "../Navbar";
 import RecentTrans from "../RecentTrans";
@@ -28,16 +27,18 @@ const DashboardContainer = () => {
         </Typography>
         <Stats />
 
-        <Link href="/transactions/add" asChild>
-          <Button
-            variant="light"
-            leftIcon={(style) => (
-              <FeatherIcon name="plus" style={style} size={16} />
-            )}
-          >
-            Tambah Catatan
-          </Button>
-        </Link>
+        <AddButton
+          customButton={
+            <Button
+              variant="light"
+              leftIcon={(style) => (
+                <IonIcon name="add" style={style} size={16} />
+              )}
+            >
+              Tambah Catatan
+            </Button>
+          }
+        />
 
         <RecentTrans />
       </Container>

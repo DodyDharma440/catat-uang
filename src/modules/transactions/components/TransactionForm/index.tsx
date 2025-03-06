@@ -3,6 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import Fa6Icon from "react-native-vector-icons/FontAwesome6";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
@@ -27,8 +28,11 @@ import { useGetCategories } from "../../hooks";
 import type { ITransactionForm, TransactionType } from "../../interfaces";
 
 const TransactionForm = () => {
-  const { push, dismissTo } = useRouter();
-  const { transType } = useLocalSearchParams<{ transType?: string }>();
+  const { dismissTo } = useRouter();
+  const { transType: transTypeParams } = useLocalSearchParams<{
+    transType?: string;
+  }>();
+  const [transType, setTransType] = useState(transTypeParams);
 
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -60,8 +64,9 @@ const TransactionForm = () => {
       const { category, ...formValues } = values;
 
       formValues.type = (transType ?? "expense") as TransactionType;
-      formValues.date = dayjs(formValues.date).format("YYYY-MM-DD");
       formValues.time = dayjs(formValues.date).format("HH:mm");
+      formValues.date = dayjs(formValues.date).format("YYYY-MM-DD");
+      formValues.note = formValues.note ?? "";
 
       const categoryColName =
         transType === "income" ? "income_categories" : "categories";
@@ -75,10 +80,15 @@ const TransactionForm = () => {
       );
 
       setIsLoading(false);
-      push("/transactions");
+      dismissTo("/transactions");
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log("🚀 ~ submitHandler ~ error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: (error as any)?.message ?? "Terjadi kesalahan",
+      });
       setIsLoading(false);
     }
   };
@@ -94,7 +104,14 @@ const TransactionForm = () => {
           position: "relative",
         }}
       >
-        <View style={{ flexDirection: "row", padding: 16 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            padding: 16,
+            position: "relative",
+            zIndex: 3,
+          }}
+        >
           <TouchableOpacity onPress={() => dismissTo("/transactions")}>
             <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
           </TouchableOpacity>
@@ -108,7 +125,13 @@ const TransactionForm = () => {
               Tambah {transType === "income" ? "Pemasukan" : "Pengeluaran"}
             </Typography>
           </View>
-          <View style={{ width: 24 }}></View>
+          <TouchableOpacity
+            onPress={() =>
+              setTransType((prev) => (prev === "income" ? "expense" : "income"))
+            }
+          >
+            <IonIcon name="refresh" color={theme.colors.white} size={24} />
+          </TouchableOpacity>
         </View>
         <Fa6Icon
           name={
