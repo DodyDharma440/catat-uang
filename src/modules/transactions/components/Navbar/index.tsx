@@ -8,10 +8,12 @@ import { Link } from "expo-router";
 
 import { opacityColor } from "@/common/utils/colors";
 
+import { useTransListContext } from "../../contexts";
 import MonthSelector from "../MonthSelector";
 
 const Navbar = () => {
   const theme = useTheme();
+  const { monthYear } = useTransListContext();
 
   return (
     <View
@@ -38,7 +40,7 @@ const Navbar = () => {
         </View>
       </TouchableOpacity>
       <View>
-        <MonthSelector />
+        <MonthSelector value={monthYear} />
       </View>
       <Link href="/transactions/add?transType=income" asChild>
         <TouchableOpacity>

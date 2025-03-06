@@ -19,7 +19,7 @@ const Navbar = () => {
       <Avatar name={user?.displayName} />
 
       <View style={{ flex: 1 }}>
-        <MonthSelector />
+        <MonthSelector value="2025-03" />
       </View>
 
       <Link href="/settings" asChild>

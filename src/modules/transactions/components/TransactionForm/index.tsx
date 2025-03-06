@@ -7,6 +7,7 @@ import Fa6Icon from "react-native-vector-icons/FontAwesome6";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
+import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { addDoc, collection, doc } from "firebase/firestore";
 import { db } from "firebase-config";
@@ -57,7 +58,11 @@ const TransactionForm = () => {
 
     try {
       const { category, ...formValues } = values;
-      formValues.type = (transType ?? "income") as TransactionType;
+
+      formValues.type = (transType ?? "expense") as TransactionType;
+      formValues.date = dayjs(formValues.date).format("YYYY-MM-DD");
+      formValues.time = dayjs(formValues.date).format("HH:mm");
+
       const categoryColName =
         transType === "income" ? "income_categories" : "categories";
 

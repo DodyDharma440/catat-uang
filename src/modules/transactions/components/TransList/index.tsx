@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { View } from "react-native";
 
+import dayjs from "dayjs";
 import {
   collection,
   getDoc,
@@ -20,15 +21,40 @@ import {
 import { useFetchState } from "@/common/hooks";
 import { useUserAuth } from "@/modules/auth/contexts";
 
+import { useTransListContext } from "../../contexts";
 import type { ICategory, ITransaction } from "../../interfaces";
 import TransCard from "../TransCard";
 
-const headings = ["Hari Ini", "Kemarin", "Lebih Awal"];
+const headings = ["Hari ini", "Kemarin", "Lebih awal"];
+
+type TransactionState = Array<{
+  title: string;
+  items: ITransaction[];
+}>;
 
 const TransList = () => {
   const { user } = useUserAuth();
 
-  const [transactions, setTransactions] = useState<ITransaction[]>([]);
+  const { searchValue } = useTransListContext();
+
+  const [transactions, setTransactions] = useState<TransactionState>([]);
+  const filteredTrans = useMemo(() => {
+    return transactions
+      .map((t) => {
+        return {
+          ...t,
+          items: t.items.filter((item) => {
+            if (!searchValue) {
+              return true;
+            }
+
+            return item.title.toLowerCase().includes(searchValue.toLowerCase());
+          }),
+        };
+      })
+      .filter((t) => t.items.length);
+  }, [searchValue, transactions]);
+
   const { isLoading, errorMessage, setError, startLoading, endLoading } =
     useFetchState();
 
@@ -41,13 +67,24 @@ const TransList = () => {
 
     try {
       const querySnapshot = await getDocs(q);
-      const _trans: ITransaction[] = [];
+      const grouped: TransactionState = headings.map((h) => ({
+        title: h,
+        items: [],
+      }));
 
       await Promise.all(
         querySnapshot.docs.map(async (doc) => {
           const data = doc.data();
           const categoryDoc = await getDoc(data.category);
-          _trans.push({
+
+          const isToday = dayjs(data.date).isSame(dayjs().format("YYYY-MM-DD"));
+          const isYesterday = dayjs(data.date).isSame(
+            dayjs().add(-1, "day").format("YYYY-MM-DD")
+          );
+
+          const index: number = isToday ? 0 : isYesterday ? 1 : 2;
+
+          grouped[index].items.push({
             ...(data as ITransaction),
             category: categoryDoc.data() as ICategory,
             id: doc.id,
@@ -55,7 +92,7 @@ const TransList = () => {
         })
       );
 
-      setTransactions(_trans);
+      setTransactions(grouped.filter((g) => g.items.length));
       endLoading();
     } catch (error) {
       endLoading();
@@ -73,18 +110,18 @@ const TransList = () => {
         <Loader
           isLoading={isLoading}
           error={errorMessage}
-          isEmpty={!transactions.length}
+          isEmpty={!filteredTrans.length}
           emptyMessage="Tidak ada transaksi"
         >
           <View style={{ gap: 16, paddingBottom: 200 }}>
-            {headings.map((heading) => {
+            {filteredTrans.map((trans) => {
               return (
-                <View key={heading} style={{ gap: 12 }}>
+                <View key={trans.title} style={{ gap: 12 }}>
                   <Typography fontWeight="700" style={{ fontSize: 18 }}>
-                    {heading}
+                    {trans.title}
                   </Typography>
-                  {transactions.map((trans, i) => {
-                    return <TransCard key={i} transaction={trans} />;
+                  {trans.items.map((item, i) => {
+                    return <TransCard key={i} transaction={item} />;
                   })}
                 </View>
               );

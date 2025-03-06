@@ -1,15 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
+import dayjs from "dayjs";
 
 import { Typography } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 
-const MonthSelector = () => {
+type MonthSelectorProps = {
+  value: string;
+};
+
+const MonthSelector: React.FC<MonthSelectorProps> = ({ value }) => {
   const theme = useTheme();
+  const dateLabel = useMemo(() => {
+    return dayjs(`${value}-01`).format("MMMM YYYY");
+  }, [value]);
 
   return (
     <View style={styles.root}>
@@ -19,7 +27,7 @@ const MonthSelector = () => {
           { borderColor: opacityColor(theme.colors.primary, 10) },
         ]}
       >
-        <Typography fontWeight="600">Februari 2025</Typography>
+        <Typography fontWeight="600">{dateLabel}</Typography>
         <Ionicons
           name="chevron-down"
           color={theme.colors.primary}
