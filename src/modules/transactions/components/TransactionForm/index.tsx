@@ -285,6 +285,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       placeholder="Berita..."
                       errorMessage={errors.title?.message}
                       readOnly={isReadOnlyField}
+                      isRequired
                       {...field}
                       onChangeText={field.onChange}
                     />

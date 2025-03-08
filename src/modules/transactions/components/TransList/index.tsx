@@ -1,11 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 
 import { View } from "react-native";
-
-import dayjs from "dayjs";
-import type { Unsubscribe } from "firebase/firestore";
-import { collection, getDoc, onSnapshot, query } from "firebase/firestore";
-import { db } from "firebase-config";
 
 import {
   Container,
@@ -13,26 +8,16 @@ import {
   RefreshableScrollView,
   Typography,
 } from "@/common/components";
-import { useFetchState } from "@/common/hooks";
-import { useUserAuth } from "@/modules/auth/contexts";
 
 import { useTransListContext } from "../../contexts";
-import type { ICategory, ITransaction } from "../../interfaces";
+import { useGetTransactions } from "../../hooks";
 import TransCard from "../TransCard";
 
-const headings = ["Hari ini", "Kemarin", "Lebih awal"];
-
-type TransactionState = Array<{
-  title: string;
-  items: ITransaction[];
-}>;
-
 const TransList = () => {
-  const { user } = useUserAuth();
+  const { searchValue, monthYear } = useTransListContext();
 
-  const { searchValue } = useTransListContext();
-
-  const [transactions, setTransactions] = useState<TransactionState>([]);
+  const { transactions, isLoading, errorMessage, handleGetTransactions } =
+    useGetTransactions({ monthYear });
   const filteredTrans = useMemo(() => {
     return transactions
       .map((t) => {
@@ -57,69 +42,6 @@ const TransList = () => {
       })
       .filter((t) => t.items.length);
   }, [searchValue, transactions]);
-
-  const [unsub, setUnsub] = useState<Unsubscribe>();
-
-  const { isLoading, errorMessage, setError, startLoading, endLoading } =
-    useFetchState();
-
-  const handleGetTransactions = useCallback(async () => {
-    startLoading();
-    const q = query(
-      collection(db, "transactions", user?.uid ?? "", "user_transactions")
-    );
-
-    try {
-      const _unsub = onSnapshot(q, async (querySnapshot) => {
-        const grouped: TransactionState = headings.map((h) => ({
-          title: h,
-          items: [],
-        }));
-
-        await Promise.all(
-          querySnapshot.docs.map(async (doc) => {
-            const data = doc.data();
-            const categoryDoc = await getDoc(data.category);
-
-            const isToday = dayjs(data.date).isSame(
-              dayjs().format("YYYY-MM-DD")
-            );
-            const isYesterday = dayjs(data.date).isSame(
-              dayjs().add(-1, "day").format("YYYY-MM-DD")
-            );
-
-            const index: number = isToday ? 0 : isYesterday ? 1 : 2;
-
-            grouped[index].items.push({
-              ...(data as ITransaction),
-              category: categoryDoc.data() as ICategory,
-              id: doc.id,
-            });
-          })
-        );
-
-        setTransactions(grouped.filter((g) => g.items.length));
-        endLoading();
-      });
-      setUnsub((prev) => {
-        prev?.();
-        return _unsub;
-      });
-    } catch (error) {
-      endLoading();
-      setError(error);
-    }
-  }, [endLoading, setError, startLoading, user?.uid]);
-
-  useEffect(() => {
-    handleGetTransactions();
-  }, [handleGetTransactions]);
-
-  useEffect(() => {
-    return () => {
-      unsub?.();
-    };
-  }, [unsub]);
 
   return (
     <RefreshableScrollView refresher={handleGetTransactions}>

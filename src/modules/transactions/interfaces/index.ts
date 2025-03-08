@@ -23,3 +23,8 @@ export interface ITransactionForm
   extends Omit<ITransaction, "id" | "category"> {
   category: string;
 }
+
+export type TransactionState = Array<{
+  title: string;
+  items: ITransaction[];
+}>;
