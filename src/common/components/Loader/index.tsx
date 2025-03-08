@@ -9,7 +9,7 @@ import { opacityColor } from "@/common/utils/colors";
 import Loading from "../Loading";
 import Typography from "../Typography";
 
-type LoaderProps = {
+export type LoaderProps = {
   isLoading: boolean;
   error?: string;
   placeholderHeight?: number;

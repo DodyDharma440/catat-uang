@@ -29,6 +29,7 @@ const DatePicker = forwardRef<TextInput, DatePickerProps>(
       onChange,
       displayValueFormat = "YYYY-MM-DD",
       pickerProps,
+      readOnly,
       ...props
     },
     ref
@@ -38,7 +39,13 @@ const DatePicker = forwardRef<TextInput, DatePickerProps>(
 
     return (
       <View style={style}>
-        <Pressable onPress={() => setIsOpen(true)}>
+        <Pressable
+          onPress={() => {
+            if (!readOnly) {
+              setIsOpen(true);
+            }
+          }}
+        >
           <Input
             {...props}
             onChange={() => {}}

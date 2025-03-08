@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -10,24 +10,40 @@ import IonIcon from "react-native-vector-icons/Ionicons";
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { addDoc, collection, doc } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import { db } from "firebase-config";
 
 import {
   Button,
   DatePicker,
   Input,
+  Loader,
   Select,
   Typography,
 } from "@/common/components";
+import type { LoaderProps } from "@/common/components/Loader";
 import { opacityColor } from "@/common/utils/colors";
 import { thousandsFormat } from "@/common/utils/number-format";
 import { useUserAuth } from "@/modules/auth/contexts";
 
 import { useGetCategories } from "../../hooks";
-import type { ITransactionForm, TransactionType } from "../../interfaces";
+import type {
+  ITransaction,
+  ITransactionForm,
+  TransactionType,
+} from "../../interfaces";
 
-const TransactionForm = () => {
+type TransactionFormProps = {
+  isReadOnly?: boolean;
+  transaction?: ITransaction;
+  loaderProps?: Omit<LoaderProps, "children">;
+};
+
+const TransactionForm: React.FC<TransactionFormProps> = ({
+  isReadOnly,
+  transaction,
+  loaderProps,
+}) => {
   const { dismissTo } = useRouter();
   const { transType: transTypeParams } = useLocalSearchParams<{
     transType?: string;
@@ -51,11 +67,17 @@ const TransactionForm = () => {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ITransactionForm>({
     defaultValues: {
       date: new Date().toISOString(),
     },
   });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const isReadOnlyField = useMemo(() => {
+    return isReadOnly && !isEditing;
+  }, [isEditing, isReadOnly]);
 
   const submitHandler = async (values: ITransactionForm) => {
     setIsLoading(true);
@@ -71,13 +93,39 @@ const TransactionForm = () => {
       const categoryColName =
         transType === "income" ? "income_categories" : "categories";
 
-      await addDoc(
-        collection(db, "transactions", user?.uid ?? "", "user_transactions"),
-        {
-          ...formValues,
-          category: doc(db, categoryColName, category),
-        }
-      );
+      if (isEditing && transaction?.id) {
+        await updateDoc(
+          doc(
+            db,
+            "transactions",
+            user?.uid ?? "",
+            "user_transactions",
+            transaction?.id
+          ),
+          {
+            ...formValues,
+            category: doc(db, categoryColName, category),
+          }
+        );
+        Toast.show({
+          type: "success",
+          text1: "Berhasil",
+          text2: "Catatan transaksi berhasil diperbarui",
+        });
+      } else {
+        await addDoc(
+          collection(db, "transactions", user?.uid ?? "", "user_transactions"),
+          {
+            ...formValues,
+            category: doc(db, categoryColName, category),
+          }
+        );
+        Toast.show({
+          type: "success",
+          text1: "Berhasil",
+          text2: "Catatan transaksi berhasil dibuat",
+        });
+      }
 
       setIsLoading(false);
       dismissTo("/transactions");
@@ -92,6 +140,25 @@ const TransactionForm = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (transaction) {
+      const { title, note, category, amount, type, date, time } = transaction;
+      const [hour, minute] = time.split(":");
+      const dateTime = dayjs(date)
+        .set("hours", Number(hour))
+        .set("minutes", Number(minute))
+        .toISOString();
+      reset({
+        title,
+        note,
+        category: category.id,
+        amount,
+        type,
+        date: dateTime,
+      });
+    }
+  }, [reset, transaction]);
 
   return (
     <View style={{ minHeight: "100%" }}>
@@ -122,16 +189,29 @@ const TransactionForm = () => {
               style={{ color: theme.colors.white, fontSize: 20 }}
               fontWeight="600"
             >
-              Tambah {transType === "income" ? "Pemasukan" : "Pengeluaran"}
+              {isReadOnly ? "Detail" : "Tambah"}{" "}
+              {transType === "income" ? "Pemasukan" : "Pengeluaran"}
             </Typography>
           </View>
-          <TouchableOpacity
-            onPress={() =>
-              setTransType((prev) => (prev === "income" ? "expense" : "income"))
-            }
-          >
-            <IonIcon name="refresh" color={theme.colors.white} size={24} />
-          </TouchableOpacity>
+          {isReadOnly ? (
+            isEditing ? (
+              <TouchableOpacity onPress={() => setIsEditing(false)}>
+                <IonIcon name="close" color={theme.colors.white} size={24} />
+              </TouchableOpacity>
+            ) : (
+              <View style={{ width: 24 }} />
+            )
+          ) : (
+            <TouchableOpacity
+              onPress={() =>
+                setTransType((prev) =>
+                  prev === "income" ? "expense" : "income"
+                )
+              }
+            >
+              <IonIcon name="refresh" color={theme.colors.white} size={24} />
+            </TouchableOpacity>
+          )}
         </View>
         <Fa6Icon
           name={
@@ -154,141 +234,159 @@ const TransactionForm = () => {
           padding: 24,
         }}
       >
-        <ScrollView>
-          <View style={{ gap: 16 }}>
-            <Controller
-              control={control}
-              name="amount"
-              rules={{
-                required: "Nominal harus diisi",
-              }}
-              render={({ field }) => {
-                return (
-                  <Input
-                    {...field}
-                    value={thousandsFormat(field.value, ".")}
-                    onChangeText={(e) =>
-                      field.onChange(Number(e.replaceAll(".", "")))
-                    }
-                    label="Nominal"
-                    keyboardType="numeric"
-                    isRequired
-                    placeholder="Masukkan nominal"
-                    errorMessage={errors.amount?.message}
-                    leftContent={
-                      <Typography
-                        style={{
-                          paddingLeft: 6,
-                          transform: [{ translateY: -1 }],
-                        }}
-                      >
-                        Rp
-                      </Typography>
-                    }
-                  />
-                );
-              }}
-            />
-
-            <Controller
-              control={control}
-              name="title"
-              rules={{
-                required: "Berita harus diisi",
-              }}
-              render={({ field }) => {
-                return (
-                  <Input
-                    label="Berita"
-                    placeholder="Berita..."
-                    errorMessage={errors.title?.message}
-                    {...field}
-                    onChangeText={field.onChange}
-                  />
-                );
-              }}
-            />
-
-            <Controller
-              control={control}
-              name="date"
-              rules={{
-                required: "Tanggal harus dipilih",
-              }}
-              render={({ field }) => {
-                return (
-                  <DatePicker
-                    {...field}
-                    isRequired
-                    value={field.value ? new Date(field.value) : undefined}
-                    onChange={(v) => field.onChange(v.toISOString())}
-                    label="Tanggal"
-                    errorMessage={errors.date?.message}
-                    placeholder="Pilih tanggal"
-                    pickerProps={{ mode: "datetime" }}
-                    displayValueFormat="DD MMM YYYY HH:mm"
-                  />
-                );
-              }}
-            />
-
-            <Controller
-              control={control}
-              name="category"
-              rules={{
-                required: "Kategori harus dipilih",
-              }}
-              render={({ field }) => {
-                return (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      gap: 8,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Select
-                      isRequired
-                      options={categoryOptions}
-                      label="Kategori"
-                      placeholder="Pilih kategori"
-                      style={{ flex: 1 }}
-                      errorMessage={errors.category?.message}
+        <Loader isLoading={false} {...loaderProps}>
+          <ScrollView>
+            <View style={{ gap: 16 }}>
+              <Controller
+                control={control}
+                name="amount"
+                rules={{
+                  required: "Nominal harus diisi",
+                }}
+                render={({ field }) => {
+                  return (
+                    <Input
                       {...field}
+                      value={thousandsFormat(field.value, ".")}
+                      onChangeText={(e) =>
+                        field.onChange(Number(e.replaceAll(".", "")))
+                      }
+                      label="Nominal"
+                      keyboardType="numeric"
+                      isRequired
+                      placeholder="Masukkan nominal"
+                      errorMessage={errors.amount?.message}
+                      readOnly={isReadOnlyField}
+                      leftContent={
+                        <Typography
+                          style={{
+                            paddingLeft: 6,
+                            transform: [{ translateY: -1 }],
+                          }}
+                        >
+                          Rp
+                        </Typography>
+                      }
                     />
-                    <Button isCompact style={{ marginTop: 24 }}>
-                      <IonIcon name="add" size={16} />
-                    </Button>
-                  </View>
-                );
-              }}
-            />
+                  );
+                }}
+              />
 
-            <Controller
-              control={control}
-              name="note"
-              render={({ field }) => {
-                return (
-                  <Input
-                    label="Catatan"
-                    multiline
-                    style={{ height: 120, textAlignVertical: "top" }}
-                    placeholder="Masukkan catatan"
-                    {...field}
-                    onChangeText={(e) => field.onChange(e)}
-                  />
-                );
-              }}
-            />
+              <Controller
+                control={control}
+                name="title"
+                rules={{
+                  required: "Berita harus diisi",
+                }}
+                render={({ field }) => {
+                  return (
+                    <Input
+                      label="Berita"
+                      placeholder="Berita..."
+                      errorMessage={errors.title?.message}
+                      readOnly={isReadOnlyField}
+                      {...field}
+                      onChangeText={field.onChange}
+                    />
+                  );
+                }}
+              />
+
+              <Controller
+                control={control}
+                name="date"
+                rules={{
+                  required: "Tanggal harus dipilih",
+                }}
+                render={({ field }) => {
+                  return (
+                    <DatePicker
+                      {...field}
+                      isRequired
+                      value={field.value ? new Date(field.value) : undefined}
+                      onChange={(v) => field.onChange(v.toISOString())}
+                      label="Tanggal"
+                      errorMessage={errors.date?.message}
+                      placeholder="Pilih tanggal"
+                      pickerProps={{ mode: "datetime" }}
+                      readOnly={isReadOnlyField}
+                      displayValueFormat="DD MMM YYYY HH:mm"
+                    />
+                  );
+                }}
+              />
+
+              <Controller
+                control={control}
+                name="category"
+                rules={{
+                  required: "Kategori harus dipilih",
+                }}
+                render={({ field }) => {
+                  return (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        gap: 8,
+                        alignItems: "center",
+                      }}
+                    >
+                      <Select
+                        isRequired
+                        options={categoryOptions}
+                        label="Kategori"
+                        placeholder="Pilih kategori"
+                        style={{ flex: 1 }}
+                        errorMessage={errors.category?.message}
+                        readOnly={isReadOnlyField}
+                        {...field}
+                      />
+                      {!isReadOnlyField ? (
+                        <Button isCompact style={{ marginTop: 24 }}>
+                          <IonIcon name="add" size={16} />
+                        </Button>
+                      ) : null}
+                    </View>
+                  );
+                }}
+              />
+
+              <Controller
+                control={control}
+                name="note"
+                render={({ field }) => {
+                  return (
+                    <Input
+                      label="Catatan"
+                      multiline
+                      style={{ height: 120, textAlignVertical: "top" }}
+                      placeholder="Masukkan catatan"
+                      readOnly={isReadOnlyField}
+                      {...field}
+                      onChangeText={(e) => field.onChange(e)}
+                    />
+                  );
+                }}
+              />
+            </View>
+          </ScrollView>
+          <View style={{ marginTop: 20 }}>
+            {isReadOnly && !isEditing ? (
+              <>
+                <Button variant="light" onPress={() => setIsEditing(true)}>
+                  Edit
+                </Button>
+              </>
+            ) : (
+              <Button
+                isLoading={isLoading}
+                onPress={handleSubmit(submitHandler)}
+              >
+                Simpan
+              </Button>
+            )}
           </View>
-        </ScrollView>
-        <Button
-          isLoading={isLoading}
-          style={{ marginTop: 20 }}
-          onPress={handleSubmit(submitHandler)}
-        >
-          Simpan
-        </Button>
+        </Loader>
       </View>
     </View>
   );

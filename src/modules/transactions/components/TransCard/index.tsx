@@ -20,7 +20,10 @@ const TransCard: React.FC<TransCardProps> = ({ transaction }) => {
   const isPlus = transaction.type === "income";
 
   return (
-    <Link href={`/transactions/detail/${transaction.id}`} asChild>
+    <Link
+      href={`/transactions/detail?transId=${transaction.id}&transType=${transaction.type}`}
+      asChild
+    >
       <TouchableOpacity>
         <View
           style={[
