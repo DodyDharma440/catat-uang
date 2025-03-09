@@ -20,3 +20,8 @@ export const currencyFormat = (value?: string | number | null) => {
 
   return result;
 };
+
+export const compactNumber = (value?: string | number | null) => {
+  const formatter = Intl.NumberFormat("id", { notation: "compact" });
+  return formatter.format(Number(value ?? 0));
+};

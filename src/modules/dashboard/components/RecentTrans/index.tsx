@@ -20,7 +20,7 @@ const RecentTrans = () => {
           Transaksi Terbaru
         </Typography>
         <Link href="/transactions" asChild>
-          <Button isCompact variant="subtle" color="secondary">
+          <Button isCompact variant="subtle">
             Lihat Semua
           </Button>
         </Link>
@@ -31,8 +31,15 @@ const RecentTrans = () => {
         error={errorMessage}
         isEmpty={!transactions.length}
         emptyMessage="Tidak ada transaksi"
+        loaderElement={
+          <View style={styles.listWrapper}>
+            {[...Array(6)].map((_, i) => {
+              return <TransCard.Skeleton key={i} />;
+            })}
+          </View>
+        }
       >
-        <View style={{ gap: 16 }}>
+        <View style={styles.listWrapper}>
           {transactions.map((trans) => {
             return (
               <View key={trans.title} style={{ gap: 12 }}>
@@ -60,6 +67,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     flex: 1,
+  },
+  listWrapper: {
+    gap: 16,
   },
 });
 

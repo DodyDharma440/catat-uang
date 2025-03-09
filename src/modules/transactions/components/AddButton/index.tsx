@@ -1,7 +1,13 @@
 import React, { useRef } from "react";
 
-import { TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  TouchableOpacity,
+  useAnimatedValue,
+  View,
+} from "react-native";
 import Popover from "react-native-popover-view";
+import FeatherIcon from "react-native-vector-icons/Feather";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
@@ -11,8 +17,8 @@ import { Typography } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 
 const items = [
-  { label: "Pemasukan", value: "income" },
-  { label: "Pengeluaran", value: "expense" },
+  { label: "Pemasukan", value: "income", icon: "plus" },
+  { label: "Pengeluaran", value: "expense", icon: "minus" },
 ];
 
 type AddButtonProps = {
@@ -23,10 +29,30 @@ const AddButton: React.FC<AddButtonProps> = ({ customButton }) => {
   const theme = useTheme();
   const ref = useRef<Popover>(null);
 
+  const rotateAnim = useAnimatedValue(0);
+  const spinDeg = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "45deg"],
+  });
+
   return (
     <Popover
       ref={ref}
-      popoverStyle={{ borderRadius: 12 }}
+      popoverStyle={{ borderRadius: 12, backgroundColor: theme.colors.primary }}
+      onCloseComplete={() => {
+        Animated.timing(rotateAnim, {
+          duration: 200,
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }}
+      onOpenStart={() => {
+        Animated.timing(rotateAnim, {
+          duration: 200,
+          toValue: 1,
+          useNativeDriver: true,
+        }).start();
+      }}
       backgroundStyle={{
         backgroundColor: opacityColor(theme.colors.black, 10),
       }}
@@ -44,33 +70,51 @@ const AddButton: React.FC<AddButtonProps> = ({ customButton }) => {
                 borderColor: opacityColor(theme.colors.gray, 20),
               }}
             >
-              <IonIcon name="add" size={18} color={theme.colors.white} />
+              <Animated.View style={{ transform: [{ rotate: spinDeg }] }}>
+                <IonIcon name="add" size={18} color={theme.colors.white} />
+              </Animated.View>
             </View>
           </TouchableOpacity>
         )
       }
     >
       <View style={{ paddingVertical: 8, width: 160 }}>
-        {items.map((item) => {
+        {items.map((item, index) => {
           return (
-            <Link
-              href={`/transactions/add?transType=${item.value}`}
-              asChild
-              key={item.value}
-            >
-              <TouchableOpacity
-                onPress={() => ref.current?.requestClose()}
-                style={{
-                  flexDirection: "row",
-                  gap: 16,
-                  alignItems: "center",
-                  paddingVertical: 8,
-                  paddingHorizontal: 16,
-                }}
-              >
-                <Typography>{item.label}</Typography>
-              </TouchableOpacity>
-            </Link>
+            <React.Fragment key={item.value}>
+              <Link href={`/transactions/add?transType=${item.value}`} asChild>
+                <TouchableOpacity
+                  onPress={() => ref.current?.requestClose()}
+                  style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    alignItems: "center",
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <FeatherIcon
+                    name={item.icon}
+                    size={16}
+                    color={theme.colors.white}
+                  />
+                  <Typography style={{ color: theme.colors.white }}>
+                    {item.label}
+                  </Typography>
+                </TouchableOpacity>
+              </Link>
+
+              {index === 0 ? (
+                <View
+                  style={{
+                    marginVertical: 6,
+                    marginHorizontal: 10,
+                    height: 1,
+                    backgroundColor: opacityColor(theme.colors.white, 50),
+                  }}
+                />
+              ) : null}
+            </React.Fragment>
           );
         })}
       </View>

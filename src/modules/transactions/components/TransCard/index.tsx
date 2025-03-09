@@ -10,6 +10,7 @@ import { Typography } from "@/common/components";
 import { currencyFormat } from "@/common/utils/number-format";
 
 import type { ITransaction } from "../../interfaces";
+import TransCardSkeleton from "./Skeleton";
 
 type TransCardProps = {
   transaction: ITransaction;
@@ -96,4 +97,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TransCard;
+const _TransCard = TransCard as typeof TransCard & {
+  Skeleton: typeof TransCardSkeleton;
+};
+
+_TransCard.Skeleton = TransCardSkeleton;
+
+export default _TransCard;

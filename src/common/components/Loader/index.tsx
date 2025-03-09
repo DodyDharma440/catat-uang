@@ -16,6 +16,7 @@ export type LoaderProps = {
   children: React.ReactNode;
   isEmpty?: boolean;
   emptyMessage?: string;
+  loaderElement?: React.ReactNode;
 };
 
 const Loader: React.FC<LoaderProps> = ({
@@ -25,21 +26,24 @@ const Loader: React.FC<LoaderProps> = ({
   children,
   isEmpty,
   emptyMessage = "Tidak ada data",
+  loaderElement,
 }) => {
   const theme = useTheme();
 
   return (
     <>
       {isLoading ? (
-        <View
-          style={{
-            height: placeholderHeight,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Loading />
-        </View>
+        loaderElement ?? (
+          <View
+            style={{
+              height: placeholderHeight,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Loading />
+          </View>
+        )
       ) : error ? (
         <Typography style={{ textAlign: "center" }}>{error}</Typography>
       ) : isEmpty ? (

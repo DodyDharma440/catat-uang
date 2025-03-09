@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import {
   Container,
@@ -51,8 +51,15 @@ const TransList = () => {
           error={errorMessage}
           isEmpty={!filteredTrans.length}
           emptyMessage="Tidak ada transaksi"
+          loaderElement={
+            <View style={styles.listWrapper}>
+              {[...Array(6)].map((_, i) => {
+                return <TransCard.Skeleton key={i} />;
+              })}
+            </View>
+          }
         >
-          <View style={{ gap: 16, paddingBottom: 200 }}>
+          <View style={styles.listWrapper}>
             {filteredTrans.map((trans) => {
               return (
                 <View key={trans.title} style={{ gap: 12 }}>
@@ -71,5 +78,12 @@ const TransList = () => {
     </RefreshableScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  listWrapper: {
+    gap: 16,
+    paddingBottom: 200,
+  },
+});
 
 export default TransList;

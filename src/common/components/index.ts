@@ -7,4 +7,5 @@ export { default as Loader } from "./Loader";
 export { default as Loading } from "./Loading";
 export { default as RefreshableScrollView } from "./RefreshableScrollView";
 export { default as Select } from "./Select";
+export { default as Skeleton } from "./Skeleton";
 export { default as Typography } from "./Typography";
