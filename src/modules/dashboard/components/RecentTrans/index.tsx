@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { StyleSheet, View } from "react-native";
 
@@ -8,10 +8,23 @@ import { Button, Loader, Typography } from "@/common/components";
 import { TransCard } from "@/modules/transactions/components";
 import { useGetTransactions } from "@/modules/transactions/hooks";
 
+import { useDashboardContext } from "../../contexts";
+
 const RecentTrans = () => {
-  const { transactions, isLoading, errorMessage } = useGetTransactions({
-    limit: 8,
-  });
+  const { addRefresher, monthYear } = useDashboardContext();
+  const { transactions, isLoading, errorMessage, handleGetTransactions } =
+    useGetTransactions({
+      limit: 8,
+      monthYear,
+    });
+
+  useEffect(() => {
+    addRefresher({
+      key: "recent-trans",
+      action: handleGetTransactions,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleGetTransactions]);
 
   return (
     <View>

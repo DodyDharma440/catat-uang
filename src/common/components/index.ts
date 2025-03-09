@@ -5,6 +5,7 @@ export { default as DatePicker } from "./DatePicker";
 export { default as Input } from "./Input";
 export { default as Loader } from "./Loader";
 export { default as Loading } from "./Loading";
+export { default as MonthYearPicker } from "./MonthYearPicker";
 export { default as RefreshableScrollView } from "./RefreshableScrollView";
 export { default as Select } from "./Select";
 export { default as Skeleton } from "./Skeleton";

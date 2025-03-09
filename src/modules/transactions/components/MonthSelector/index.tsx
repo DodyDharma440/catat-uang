@@ -1,41 +1,71 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import type { RBSheetRef } from "react-native-raw-bottom-sheet";
+import RBSheet from "react-native-raw-bottom-sheet";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 
-import { Typography } from "@/common/components";
+import { MonthYearPicker, Typography } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 
 type MonthSelectorProps = {
   value: string;
+  onSelect: (value: string) => void;
 };
 
-const MonthSelector: React.FC<MonthSelectorProps> = ({ value }) => {
+const MonthSelector: React.FC<MonthSelectorProps> = ({ value, onSelect }) => {
   const theme = useTheme();
+  const refRBSheet = useRef<RBSheetRef>(null);
+
   const dateLabel = useMemo(() => {
     return dayjs(`${value}-01`).format("MMMM YYYY");
   }, [value]);
 
   return (
-    <View style={styles.root}>
-      <TouchableOpacity
-        style={[
-          styles.monthFilter,
-          { borderColor: opacityColor(theme.colors.primary, 10) },
-        ]}
-      >
-        <Typography fontWeight="600">{dateLabel}</Typography>
-        <Ionicons
-          name="chevron-down"
-          color={theme.colors.primary}
-          size={16}
-          style={{ marginTop: 2 }}
-        />
-      </TouchableOpacity>
-    </View>
+    <>
+      <View style={styles.root}>
+        <TouchableOpacity
+          style={[
+            styles.monthFilter,
+            { borderColor: opacityColor(theme.colors.primary, 10) },
+          ]}
+          onPress={() => refRBSheet.current?.open()}
+        >
+          <Typography fontWeight="600">{dateLabel}</Typography>
+          <Ionicons
+            name="chevron-down"
+            color={theme.colors.primary}
+            size={16}
+            style={{ marginTop: 2 }}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <RBSheet ref={refRBSheet} useNativeDriver={false} height={380}>
+        <View style={{ padding: 16 }}>
+          <Typography
+            fontWeight="700"
+            style={{
+              marginBottom: 16,
+              fontSize: 20,
+            }}
+          >
+            Pilih Bulan
+          </Typography>
+          <MonthYearPicker
+            maxDate={new Date()}
+            value={value}
+            onSelect={(v) => {
+              onSelect(v);
+              refRBSheet.current?.close();
+            }}
+          />
+        </View>
+      </RBSheet>
+    </>
   );
 };
 

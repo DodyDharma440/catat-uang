@@ -1,25 +1,35 @@
 import React, { useMemo } from "react";
 
-import { ScrollView } from "react-native";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
-import { Button, Container, Typography } from "@/common/components";
+import {
+  Button,
+  Container,
+  RefreshableScrollView,
+  Typography,
+} from "@/common/components";
 import { useUserAuth } from "@/modules/auth/contexts";
 import { AddButton } from "@/modules/transactions/components";
 
+import { useDashboardContext } from "../../contexts";
 import Navbar from "../Navbar";
 import RecentTrans from "../RecentTrans";
 import Stats from "../Stats";
 
 const DashboardContainer = () => {
   const { user } = useUserAuth();
+  const { refreshers } = useDashboardContext();
 
   const displayName = useMemo(() => {
     return user?.displayName?.split(" ").slice(0, 2).join(" ");
   }, [user?.displayName]);
 
   return (
-    <ScrollView>
+    <RefreshableScrollView
+      refresher={async () => {
+        await Promise.all(refreshers.map(async (r) => await r.action()));
+      }}
+    >
       <Container style={{ gap: 12 }}>
         <Navbar />
         <Typography fontWeight="700" style={{ fontSize: 24 }}>
@@ -42,7 +52,7 @@ const DashboardContainer = () => {
 
         <RecentTrans />
       </Container>
-    </ScrollView>
+    </RefreshableScrollView>
   );
 };
 

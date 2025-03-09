@@ -13,7 +13,7 @@ import MonthSelector from "../MonthSelector";
 
 const Navbar = () => {
   const theme = useTheme();
-  const { monthYear } = useTransListContext();
+  const { monthYear, setMonthYear } = useTransListContext();
 
   return (
     <View
@@ -40,7 +40,7 @@ const Navbar = () => {
         </View>
       </TouchableOpacity>
       <View>
-        <MonthSelector value={monthYear} />
+        <MonthSelector value={monthYear} onSelect={setMonthYear} />
       </View>
 
       <AddButton />

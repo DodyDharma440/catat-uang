@@ -89,9 +89,9 @@ const Button = forwardRef<View, ButtonProps>(
       <TouchableOpacity
         {...props}
         style={[
-          style,
           fullWidth ? { width: "100%" } : {},
           { opacity: isLoading ? 0.6 : 1 },
+          style,
         ]}
         ref={ref}
         disabled={props.disabled || isLoading}

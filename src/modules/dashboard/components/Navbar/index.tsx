@@ -10,16 +10,20 @@ import { Avatar } from "@/common/components";
 import { useUserAuth } from "@/modules/auth/contexts";
 import { MonthSelector } from "@/modules/transactions/components";
 
+import { useDashboardContext } from "../../contexts";
+
 const Navbar = () => {
   const { user } = useUserAuth();
   const theme = useTheme();
+
+  const { monthYear, setMonthYear } = useDashboardContext();
 
   return (
     <View style={styles.root}>
       <Avatar name={user?.displayName} />
 
       <View style={{ flex: 1 }}>
-        <MonthSelector value="2025-03" />
+        <MonthSelector value={monthYear} onSelect={setMonthYear} />
       </View>
 
       <Link href="/settings" asChild>
