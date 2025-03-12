@@ -6,8 +6,8 @@ import { useTheme } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { auth } from "firebase-config";
 
-import { Typography } from "@/common/components";
-import { useRemoveAndReplace } from "@/common/hooks";
+import { AlertSheet, Button, Typography } from "@/common/components";
+import { useDisclosure, useRemoveAndReplace } from "@/common/hooks";
 import { useUserAuth } from "@/modules/auth/contexts";
 
 import { settingItems } from "../../constants";
@@ -18,6 +18,9 @@ const SettingsContainer = () => {
 
   const { removeAndReplace } = useRemoveAndReplace();
   const { setUser } = useUserAuth();
+
+  const [isOpenLogout, { open: openLogout, close: closeLogout }] =
+    useDisclosure();
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -45,19 +48,36 @@ const SettingsContainer = () => {
           Pengaturan
         </Typography>
 
-        <View style={{ gap: 24 }}>
+        <View style={{ gap: 30 }}>
           {settingItems.map((item, index) => {
             return (
               <SettingItem
                 {...item}
                 key={index}
                 path=""
-                action={item.title === "Sign Out" ? handleSignOut : undefined}
+                action={item.title === "Sign Out" ? openLogout : undefined}
               />
             );
           })}
         </View>
       </View>
+
+      <AlertSheet
+        isOpen={isOpenLogout}
+        title="Logout Akun"
+        description="Apakah Anda yakin untuk logout? Anda harus login kembali."
+        action={
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <Button style={{ flex: 1 }} variant="light" onPress={handleSignOut}>
+              Logout
+            </Button>
+            <Button style={{ flex: 1 }} onPress={closeLogout}>
+              Batal
+            </Button>
+          </View>
+        }
+        onClose={closeLogout}
+      />
     </View>
   );
 };
@@ -81,8 +101,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
   listTitle: {
-    fontSize: 36,
-    marginBottom: 24,
+    fontSize: 30,
+    marginBottom: 28,
   },
 });
 
