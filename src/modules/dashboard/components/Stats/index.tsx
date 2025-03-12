@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Fa6icons from "react-native-vector-icons/FontAwesome6";
 
 import { useTheme } from "@react-navigation/native";
@@ -16,7 +16,7 @@ import { db } from "firebase-config";
 
 import { Loader } from "@/common/components";
 import { useFetchState } from "@/common/hooks";
-import { compactNumber } from "@/common/utils/number-format";
+import { compactNumber, currencyFormat } from "@/common/utils/number-format";
 import { useUserAuth } from "@/modules/auth/contexts";
 
 import { useDashboardContext } from "../../contexts";
@@ -30,6 +30,10 @@ const Stats = () => {
 
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
+
+  const balance = useMemo(() => {
+    return income - expense;
+  }, [expense, income]);
 
   const { isLoading, startLoading, endLoading, setError } = useFetchState();
 
@@ -92,49 +96,71 @@ const Stats = () => {
   }, [handleGetSummary]);
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        maxWidth: "100%",
-        gap: 18,
-      }}
-    >
+    <View style={styles.root}>
       <Loader
         isLoading={isLoading}
         loaderElement={
           <>
-            <StatCard.Skeleton />
-            <StatCard.Skeleton />
+            <StatCard.Skeleton isLarger />
+            <View style={styles.inner}>
+              <StatCard.Skeleton />
+              <StatCard.Skeleton />
+            </View>
           </>
         }
       >
         <StatCard
           isHighlight
-          label="Pemasukan"
-          value={`Rp ${compactNumber(income)}`}
+          label="Balance"
+          value={`${currencyFormat(balance)}`}
+          isLarger
           icon={
             <Fa6icons
-              name="money-bill-trend-up"
-              size={16}
+              name="money-bill-transfer"
+              size={24}
               color={theme.colors.primary}
             />
           }
         />
-        <StatCard
-          label="Pengeluaran"
-          value={`Rp ${compactNumber(expense)}`}
-          icon={
-            <Fa6icons
-              name="money-bill-wave"
-              size={16}
-              color={theme.colors.primary}
-            />
-          }
-        />
+        <View style={styles.inner}>
+          <StatCard
+            label="Pemasukan"
+            value={`Rp ${compactNumber(income)}`}
+            icon={
+              <Fa6icons
+                name="money-bill-trend-up"
+                size={16}
+                color={theme.colors.primary}
+              />
+            }
+          />
+          <StatCard
+            label="Pengeluaran"
+            value={`Rp ${compactNumber(expense)}`}
+            icon={
+              <Fa6icons
+                name="money-bill-wave"
+                size={16}
+                color={theme.colors.primary}
+              />
+            }
+          />
+        </View>
       </Loader>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  root: {
+    gap: 18,
+  },
+  inner: {
+    flexDirection: "row",
+    alignItems: "center",
+    maxWidth: "100%",
+    gap: 18,
+  },
+});
 
 export default Stats;

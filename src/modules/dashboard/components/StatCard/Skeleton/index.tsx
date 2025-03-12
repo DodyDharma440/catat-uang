@@ -7,7 +7,11 @@ import { useTheme } from "@react-navigation/native";
 import { Skeleton, Typography } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 
-const StatCardSkeleton = () => {
+type StatCardSkeletonProps = {
+  isLarger?: boolean;
+};
+
+const StatCardSkeleton: React.FC<StatCardSkeletonProps> = ({ isLarger }) => {
   const theme = useTheme();
 
   return (
@@ -19,10 +23,20 @@ const StatCardSkeleton = () => {
     >
       <View style={styles.content}>
         <View>
-          <Skeleton style={[styles.iconWrapper]} />
+          <Skeleton
+            style={[
+              styles.iconWrapper,
+              {
+                width: isLarger ? 50 : 36,
+                height: isLarger ? 50 : 36,
+              },
+            ]}
+          />
 
           <Skeleton>
-            <Typography style={{ fontSize: 16 }}>Card Label</Typography>
+            <Typography style={{ fontSize: isLarger ? 18 : 16 }}>
+              Card Label
+            </Typography>
           </Skeleton>
         </View>
 
@@ -30,11 +44,11 @@ const StatCardSkeleton = () => {
           <Skeleton>
             <Typography
               style={{
-                fontSize: 24,
+                fontSize: isLarger ? 28 : 24,
               }}
               fontWeight="700"
             >
-              Rp 10 rb
+              {isLarger ? "Rp 100.000.000" : "Rp 10 rb"}
             </Typography>
           </Skeleton>
         </View>
@@ -63,8 +77,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    width: 36,
-    height: 36,
     marginBottom: 6,
   },
 });

@@ -15,10 +15,11 @@ type StatCardProps = {
   label: string;
   value: string;
   isHighlight?: boolean;
+  isLarger?: boolean;
 } & ViewProps;
 
 const StatCard = forwardRef<View, StatCardProps>(
-  ({ style, icon, label, value, isHighlight, ...props }, ref) => {
+  ({ style, icon, label, value, isHighlight, isLarger, ...props }, ref) => {
     const theme = useTheme();
 
     return (
@@ -44,8 +45,8 @@ const StatCard = forwardRef<View, StatCardProps>(
             <View
               style={{
                 position: "absolute",
-                width: 100,
-                height: 100,
+                width: isLarger ? 150 : 100,
+                height: isLarger ? 150 : 100,
                 backgroundColor: opacityColor(theme.colors.white, 10),
                 borderRadius: 999,
                 right: -40,
@@ -55,12 +56,12 @@ const StatCard = forwardRef<View, StatCardProps>(
             <View
               style={{
                 position: "absolute",
-                width: 80,
-                height: 80,
+                width: isLarger ? 120 : 80,
+                height: isLarger ? 120 : 80,
                 backgroundColor: opacityColor(theme.colors.white, 10),
                 borderRadius: 999,
                 right: -60,
-                top: 10,
+                top: isLarger ? 30 : 10,
               }}
             />
           </>
@@ -76,6 +77,10 @@ const StatCard = forwardRef<View, StatCardProps>(
                     ? theme.colors.white
                     : opacityColor(theme.colors.primary, 20),
                 },
+                {
+                  width: isLarger ? 50 : 36,
+                  height: isLarger ? 50 : 36,
+                },
               ]}
             >
               {icon}
@@ -83,7 +88,7 @@ const StatCard = forwardRef<View, StatCardProps>(
             <Typography
               style={{
                 color: isHighlight ? theme.colors.white : undefined,
-                fontSize: 16,
+                fontSize: isLarger ? 18 : 16,
               }}
               fontWeight="600"
             >
@@ -95,7 +100,7 @@ const StatCard = forwardRef<View, StatCardProps>(
             <Typography
               style={{
                 color: isHighlight ? theme.colors.white : undefined,
-                fontSize: 24,
+                fontSize: isLarger ? 28 : 24,
               }}
               fontWeight="700"
             >
@@ -128,8 +133,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    width: 36,
-    height: 36,
     marginBottom: 6,
   },
 });
