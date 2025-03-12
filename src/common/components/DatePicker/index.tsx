@@ -53,13 +53,15 @@ const DatePicker = forwardRef<TextInput, DatePickerProps>(
             ref={ref}
             readOnly
             rightContent={
-              <IonIcon
-                name="calendar-outline"
-                size={18}
-                style={{
-                  marginRight: 4,
-                }}
-              />
+              !readOnly ? (
+                <IonIcon
+                  name="calendar-outline"
+                  size={18}
+                  style={{
+                    marginRight: 4,
+                  }}
+                />
+              ) : null
             }
             value={dayjs(value).format(displayValueFormat)}
           />

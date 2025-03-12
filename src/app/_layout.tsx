@@ -21,6 +21,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import theme from "@/common/configs/theme";
+import { toastConfig } from "@/common/configs/toast";
 import { UserAuthProvider } from "@/modules/auth/contexts";
 
 import "react-native-reanimated";
@@ -70,7 +71,7 @@ export default function RootLayout() {
           <Stack.Screen name="get-started" options={{ headerShown: false }} />
           <Stack.Screen name="auth" options={{ headerShown: false }} />
         </Stack>
-        <Toast />
+        <Toast config={toastConfig} />
       </UserAuthProvider>
       <StatusBar style="auto" />
       <View onLayout={onLayoutRootView} />

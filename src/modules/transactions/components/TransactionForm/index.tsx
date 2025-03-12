@@ -10,10 +10,17 @@ import IonIcon from "react-native-vector-icons/Ionicons";
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "firebase-config";
 
 import {
+  AlertSheet,
   Button,
   DatePicker,
   Input,
@@ -22,6 +29,7 @@ import {
   Typography,
 } from "@/common/components";
 import type { LoaderProps } from "@/common/components/Loader";
+import { useDisclosure, useFetchState } from "@/common/hooks";
 import { opacityColor } from "@/common/utils/colors";
 import { thousandsFormat } from "@/common/utils/number-format";
 import { useUserAuth } from "@/modules/auth/contexts";
@@ -78,6 +86,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const isReadOnlyField = useMemo(() => {
     return isReadOnly && !isEditing;
   }, [isEditing, isReadOnly]);
+
+  const [isOpenDelete, { open: openDelete, close: closeDelete }] =
+    useDisclosure();
+  const {
+    isLoading: isLoadingDelete,
+    startLoading: startLoadingDelete,
+    endLoading: endLoadingDelete,
+  } = useFetchState();
 
   const submitHandler = async (values: ITransactionForm) => {
     setIsLoading(true);
@@ -141,6 +157,38 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   };
 
+  const handleDelete = async () => {
+    startLoadingDelete();
+    if (transaction) {
+      try {
+        await deleteDoc(
+          doc(
+            db,
+            "transactions",
+            user?.uid ?? "",
+            "user_transactions",
+            transaction.id
+          )
+        );
+        Toast.show({
+          type: "success",
+          text1: "Berhasil",
+          text2: "Catatan transaksi berhasil dihapus",
+        });
+        closeDelete();
+        dismissTo("/transactions");
+        endLoadingDelete();
+      } catch (error) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: (error as any)?.message ?? "Terjadi kesalahan",
+        });
+        endLoadingDelete();
+      }
+    }
+  };
+
   useEffect(() => {
     if (transaction) {
       const { title, note, category, amount, type, date, time } = transaction;
@@ -183,13 +231,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
           </TouchableOpacity>
           <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
             <Typography
               style={{ color: theme.colors.white, fontSize: 20 }}
               fontWeight="600"
             >
-              {isReadOnly ? "Detail" : "Tambah"}{" "}
+              {isReadOnly ? (isEditing ? "Edit" : "Detail") : "Tambah"}{" "}
               {transType === "income" ? "Pemasukan" : "Pengeluaran"}
             </Typography>
           </View>
@@ -199,7 +251,13 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 <IonIcon name="close" color={theme.colors.white} size={24} />
               </TouchableOpacity>
             ) : (
-              <View style={{ width: 24 }} />
+              <TouchableOpacity onPress={openDelete}>
+                <IonIcon
+                  name="trash-outline"
+                  color={theme.colors.white}
+                  size={24}
+                />
+              </TouchableOpacity>
             )
           ) : (
             <TouchableOpacity
@@ -253,7 +311,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       }
                       label="Nominal"
                       keyboardType="numeric"
-                      isRequired
+                      isRequired={!isReadOnly}
                       placeholder="Masukkan nominal"
                       errorMessage={errors.amount?.message}
                       readOnly={isReadOnlyField}
@@ -285,7 +343,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       placeholder="Berita..."
                       errorMessage={errors.title?.message}
                       readOnly={isReadOnlyField}
-                      isRequired
+                      isRequired={!isReadOnly}
                       {...field}
                       onChangeText={field.onChange}
                     />
@@ -303,7 +361,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                   return (
                     <DatePicker
                       {...field}
-                      isRequired
+                      isRequired={!isReadOnly}
                       value={field.value ? new Date(field.value) : undefined}
                       onChange={(v) => field.onChange(v.toISOString())}
                       label="Tanggal"
@@ -333,7 +391,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                       }}
                     >
                       <Select
-                        isRequired
+                        isRequired={!isReadOnly}
                         options={categoryOptions}
                         label="Kategori"
                         placeholder="Pilih kategori"
@@ -388,6 +446,31 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             )}
           </View>
         </Loader>
+        <AlertSheet
+          isOpen={isOpenDelete}
+          title="Hapus Catatan"
+          description="Apakah Anda yakin untuk menghapus catatan ini?"
+          action={
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Button
+                style={{ flex: 1 }}
+                variant="light"
+                onPress={handleDelete}
+                isLoading={isLoadingDelete}
+              >
+                Hapus
+              </Button>
+              <Button
+                style={{ flex: 1 }}
+                onPress={closeDelete}
+                disabled={isLoadingDelete}
+              >
+                Batal
+              </Button>
+            </View>
+          }
+          onClose={closeDelete}
+        />
       </View>
     </View>
   );
