@@ -6,6 +6,9 @@ export interface ICategory {
   color: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ICategoryForm extends Pick<ICategory, 'name' | 'userId'> {}
+
 export type TransactionType = "income" | "expense";
 
 export interface ITransaction {

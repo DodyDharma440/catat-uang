@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,7 +25,6 @@ import {
   DatePicker,
   Input,
   Loader,
-  Select,
   Typography,
 } from "@/common/components";
 import type { LoaderProps } from "@/common/components/Loader";
@@ -34,12 +33,12 @@ import { opacityColor } from "@/common/utils/colors";
 import { thousandsFormat } from "@/common/utils/number-format";
 import { useUserAuth } from "@/modules/auth/contexts";
 
-import { useGetCategories } from "../../hooks";
 import type {
   ITransaction,
   ITransactionForm,
   TransactionType,
 } from "../../interfaces";
+import CategoryField from "./CategoryField";
 
 type TransactionFormProps = {
   isReadOnly?: boolean;
@@ -63,24 +62,18 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   const { user } = useUserAuth();
 
-  const { categories } = useGetCategories({
-    transType: (transType ?? "expense") as TransactionType,
-  });
-  const categoryOptions = useMemo(() => {
-    return categories.map((c) => ({ label: c?.name, value: c?.id }));
-  }, [categories]);
-
   const [isLoading, setIsLoading] = useState(false);
+  const formMethods = useForm<ITransactionForm>({
+    defaultValues: {
+      date: new Date().toISOString(),
+    },
+  });
   const {
     control,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<ITransactionForm>({
-    defaultValues: {
-      date: new Date().toISOString(),
-    },
-  });
+  } = formMethods;
 
   const [isEditing, setIsEditing] = useState(false);
   const isReadOnlyField = useMemo(() => {
@@ -209,270 +202,245 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   }, [reset, transaction]);
 
   return (
-    <View style={{ minHeight: "100%" }}>
-      <View
-        style={{
-          height: "36%",
-          backgroundColor:
-            theme.colors[transType === "income" ? "primary" : "red"],
-          paddingTop: insets.top,
-          position: "relative",
-        }}
-      >
+    <FormProvider {...formMethods}>
+      <View style={{ minHeight: "100%" }}>
         <View
           style={{
-            flexDirection: "row",
-            padding: 16,
+            height: "36%",
+            backgroundColor:
+              theme.colors[transType === "income" ? "primary" : "red"],
+            paddingTop: insets.top,
             position: "relative",
-            zIndex: 3,
           }}
         >
-          <TouchableOpacity onPress={() => dismissTo("/transactions")}>
-            <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
-          </TouchableOpacity>
           <View
             style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
+              flexDirection: "row",
+              padding: 16,
+              position: "relative",
+              zIndex: 3,
             }}
           >
-            <Typography
-              style={{ color: theme.colors.white, fontSize: 20 }}
-              fontWeight="600"
-            >
-              {isReadOnly ? (isEditing ? "Edit" : "Detail") : "Tambah"}{" "}
-              {transType === "income" ? "Pemasukan" : "Pengeluaran"}
-            </Typography>
-          </View>
-          {isReadOnly ? (
-            isEditing ? (
-              <TouchableOpacity onPress={() => setIsEditing(false)}>
-                <IonIcon name="close" color={theme.colors.white} size={24} />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={openDelete}>
-                <IonIcon
-                  name="trash-outline"
-                  color={theme.colors.white}
-                  size={24}
-                />
-              </TouchableOpacity>
-            )
-          ) : (
-            <TouchableOpacity
-              onPress={() =>
-                setTransType((prev) =>
-                  prev === "income" ? "expense" : "income"
-                )
-              }
-            >
-              <IonIcon name="refresh" color={theme.colors.white} size={24} />
+            <TouchableOpacity onPress={() => dismissTo("/transactions")}>
+              <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
             </TouchableOpacity>
-          )}
-        </View>
-        <Fa6Icon
-          name={
-            transType === "income" ? "money-bill-trend-up" : "money-bill-wave"
-          }
-          color={opacityColor(theme.colors.black, 20)}
-          style={{ position: "absolute", right: 0, bottom: 50 }}
-          size={140}
-        />
-      </View>
-
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: theme.colors.white,
-          transform: [{ translateY: -60 }],
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          marginBottom: -60,
-          padding: 24,
-        }}
-      >
-        <Loader isLoading={false} {...loaderProps}>
-          <ScrollView>
-            <View style={{ gap: 16 }}>
-              <Controller
-                control={control}
-                name="amount"
-                rules={{
-                  required: "Nominal harus diisi",
-                }}
-                render={({ field }) => {
-                  return (
-                    <Input
-                      {...field}
-                      value={thousandsFormat(field.value, ".")}
-                      onChangeText={(e) =>
-                        field.onChange(Number(e.replaceAll(".", "")))
-                      }
-                      label="Nominal"
-                      keyboardType="numeric"
-                      isRequired={!isReadOnly}
-                      placeholder="Masukkan nominal"
-                      errorMessage={errors.amount?.message}
-                      readOnly={isReadOnlyField}
-                      leftContent={
-                        <Typography
-                          style={{
-                            paddingLeft: 6,
-                            transform: [{ translateY: -1 }],
-                          }}
-                        >
-                          Rp
-                        </Typography>
-                      }
-                    />
-                  );
-                }}
-              />
-
-              <Controller
-                control={control}
-                name="title"
-                rules={{
-                  required: "Berita harus diisi",
-                }}
-                render={({ field }) => {
-                  return (
-                    <Input
-                      label="Berita"
-                      placeholder="Berita..."
-                      errorMessage={errors.title?.message}
-                      readOnly={isReadOnlyField}
-                      isRequired={!isReadOnly}
-                      {...field}
-                      onChangeText={field.onChange}
-                    />
-                  );
-                }}
-              />
-
-              <Controller
-                control={control}
-                name="date"
-                rules={{
-                  required: "Tanggal harus dipilih",
-                }}
-                render={({ field }) => {
-                  return (
-                    <DatePicker
-                      {...field}
-                      isRequired={!isReadOnly}
-                      value={field.value ? new Date(field.value) : undefined}
-                      onChange={(v) => field.onChange(v.toISOString())}
-                      label="Tanggal"
-                      errorMessage={errors.date?.message}
-                      placeholder="Pilih tanggal"
-                      pickerProps={{ mode: "datetime" }}
-                      readOnly={isReadOnlyField}
-                      displayValueFormat="DD MMM YYYY HH:mm"
-                    />
-                  );
-                }}
-              />
-
-              <Controller
-                control={control}
-                name="category"
-                rules={{
-                  required: "Kategori harus dipilih",
-                }}
-                render={({ field }) => {
-                  return (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        gap: 8,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Select
-                        isRequired={!isReadOnly}
-                        options={categoryOptions}
-                        label="Kategori"
-                        placeholder="Pilih kategori"
-                        style={{ flex: 1 }}
-                        errorMessage={errors.category?.message}
-                        readOnly={isReadOnlyField}
-                        {...field}
-                      />
-                      {!isReadOnlyField ? (
-                        <Button isCompact style={{ marginTop: 24 }}>
-                          <IonIcon name="add" size={16} />
-                        </Button>
-                      ) : null}
-                    </View>
-                  );
-                }}
-              />
-
-              <Controller
-                control={control}
-                name="note"
-                render={({ field }) => {
-                  return (
-                    <Input
-                      label="Catatan"
-                      multiline
-                      style={{ height: 120, textAlignVertical: "top" }}
-                      placeholder="Masukkan catatan"
-                      readOnly={isReadOnlyField}
-                      {...field}
-                      onChangeText={(e) => field.onChange(e)}
-                    />
-                  );
-                }}
-              />
-            </View>
-          </ScrollView>
-          <View style={{ marginTop: 20 }}>
-            {isReadOnly && !isEditing ? (
-              <>
-                <Button variant="light" onPress={() => setIsEditing(true)}>
-                  Edit
-                </Button>
-              </>
-            ) : (
-              <Button
-                isLoading={isLoading}
-                onPress={handleSubmit(submitHandler)}
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                style={{ color: theme.colors.white, fontSize: 20 }}
+                fontWeight="600"
               >
-                Simpan
-              </Button>
+                {isReadOnly ? (isEditing ? "Edit" : "Detail") : "Tambah"}{" "}
+                {transType === "income" ? "Pemasukan" : "Pengeluaran"}
+              </Typography>
+            </View>
+            {isReadOnly ? (
+              isEditing ? (
+                <TouchableOpacity onPress={() => setIsEditing(false)}>
+                  <IonIcon name="close" color={theme.colors.white} size={24} />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={openDelete}>
+                  <IonIcon
+                    name="trash-outline"
+                    color={theme.colors.white}
+                    size={24}
+                  />
+                </TouchableOpacity>
+              )
+            ) : (
+              <TouchableOpacity
+                onPress={() =>
+                  setTransType((prev) =>
+                    prev === "income" ? "expense" : "income"
+                  )
+                }
+              >
+                <IonIcon name="refresh" color={theme.colors.white} size={24} />
+              </TouchableOpacity>
             )}
           </View>
-        </Loader>
-        <AlertSheet
-          isOpen={isOpenDelete}
-          title="Hapus Catatan"
-          description="Apakah Anda yakin untuk menghapus catatan ini?"
-          action={
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <Button
-                style={{ flex: 1 }}
-                variant="light"
-                onPress={handleDelete}
-                isLoading={isLoadingDelete}
-              >
-                Hapus
-              </Button>
-              <Button
-                style={{ flex: 1 }}
-                onPress={closeDelete}
-                disabled={isLoadingDelete}
-              >
-                Batal
-              </Button>
+          <Fa6Icon
+            name={
+              transType === "income" ? "money-bill-trend-up" : "money-bill-wave"
+            }
+            color={opacityColor(theme.colors.black, 20)}
+            style={{ position: "absolute", right: 0, bottom: 50 }}
+            size={140}
+          />
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: theme.colors.white,
+            transform: [{ translateY: -60 }],
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            marginBottom: -60,
+            padding: 24,
+          }}
+        >
+          <Loader isLoading={false} {...loaderProps}>
+            <ScrollView>
+              <View style={{ gap: 16 }}>
+                <Controller
+                  control={control}
+                  name="amount"
+                  rules={{
+                    required: "Nominal harus diisi",
+                  }}
+                  render={({ field }) => {
+                    return (
+                      <Input
+                        {...field}
+                        value={thousandsFormat(field.value, ".")}
+                        onChangeText={(e) =>
+                          field.onChange(Number(e.replaceAll(".", "")))
+                        }
+                        label="Nominal"
+                        keyboardType="numeric"
+                        isRequired={!isReadOnly}
+                        placeholder="Masukkan nominal"
+                        errorMessage={errors.amount?.message}
+                        readOnly={isReadOnlyField}
+                        leftContent={
+                          <Typography
+                            style={{
+                              paddingLeft: 6,
+                              transform: [{ translateY: -1 }],
+                            }}
+                          >
+                            Rp
+                          </Typography>
+                        }
+                      />
+                    );
+                  }}
+                />
+
+                <Controller
+                  control={control}
+                  name="title"
+                  rules={{
+                    required: "Berita harus diisi",
+                  }}
+                  render={({ field }) => {
+                    return (
+                      <Input
+                        label="Berita"
+                        placeholder="Berita..."
+                        errorMessage={errors.title?.message}
+                        readOnly={isReadOnlyField}
+                        isRequired={!isReadOnly}
+                        {...field}
+                        onChangeText={field.onChange}
+                      />
+                    );
+                  }}
+                />
+
+                <Controller
+                  control={control}
+                  name="date"
+                  rules={{
+                    required: "Tanggal harus dipilih",
+                  }}
+                  render={({ field }) => {
+                    return (
+                      <DatePicker
+                        {...field}
+                        isRequired={!isReadOnly}
+                        value={field.value ? new Date(field.value) : undefined}
+                        onChange={(v) => field.onChange(v.toISOString())}
+                        label="Tanggal"
+                        errorMessage={errors.date?.message}
+                        placeholder="Pilih tanggal"
+                        pickerProps={{ mode: "datetime" }}
+                        readOnly={isReadOnlyField}
+                        displayValueFormat="DD MMM YYYY HH:mm"
+                      />
+                    );
+                  }}
+                />
+
+                <CategoryField
+                  isReadOnly={isReadOnly}
+                  isReadOnlyField={isReadOnlyField}
+                  transType={transType}
+                />
+
+                <Controller
+                  control={control}
+                  name="note"
+                  render={({ field }) => {
+                    return (
+                      <Input
+                        label="Catatan"
+                        multiline
+                        style={{ height: 120, textAlignVertical: "top" }}
+                        placeholder={
+                          isReadOnlyField ? "Catatan" : "Masukkan catatan"
+                        }
+                        readOnly={isReadOnlyField}
+                        {...field}
+                        onChangeText={(e) => field.onChange(e)}
+                      />
+                    );
+                  }}
+                />
+              </View>
+            </ScrollView>
+            <View style={{ marginTop: 20 }}>
+              {isReadOnly && !isEditing ? (
+                <>
+                  <Button variant="light" onPress={() => setIsEditing(true)}>
+                    Edit
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  isLoading={isLoading}
+                  onPress={handleSubmit(submitHandler)}
+                >
+                  Simpan
+                </Button>
+              )}
             </View>
-          }
-          onClose={closeDelete}
-        />
+          </Loader>
+          <AlertSheet
+            isOpen={isOpenDelete}
+            title="Hapus Catatan"
+            description="Apakah Anda yakin untuk menghapus catatan ini?"
+            action={
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <Button
+                  style={{ flex: 1 }}
+                  variant="light"
+                  onPress={handleDelete}
+                  isLoading={isLoadingDelete}
+                >
+                  Hapus
+                </Button>
+                <Button
+                  style={{ flex: 1 }}
+                  onPress={closeDelete}
+                  disabled={isLoadingDelete}
+                >
+                  Batal
+                </Button>
+              </View>
+            }
+            onClose={closeDelete}
+          />
+        </View>
       </View>
-    </View>
+    </FormProvider>
   );
 };
 
