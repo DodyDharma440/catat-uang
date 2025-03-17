@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -10,39 +10,41 @@ type SettingItemProps = {
   title: string;
   description: string;
   iconName: string;
-  path: string;
   action?: () => void;
 };
 
-const SettingItem: React.FC<SettingItemProps> = ({
-  title,
-  description,
-  iconName,
-  action,
-}) => {
-  return (
-    <TouchableOpacity onPress={action}>
-      <View style={styles.root}>
-        <View style={styles.iconWrapper}>
-          <Icon name={iconName} size={22} color={opacityColor("#000000", 50)} />
-        </View>
+const SettingItem = forwardRef<View, SettingItemProps>(
+  ({ title, description, iconName, action, ...props }, ref) => {
+    return (
+      <TouchableOpacity onPress={action} ref={ref} {...props}>
+        <View style={styles.root}>
+          <View style={styles.iconWrapper}>
+            <Icon
+              name={iconName}
+              size={22}
+              color={opacityColor("#000000", 50)}
+            />
+          </View>
 
-        <View style={{ flex: 1 }}>
-          <Typography style={styles.title} fontWeight="600">
-            {title}
-          </Typography>
-          <Typography style={styles.description} fontWeight="500">
-            {description}
-          </Typography>
-        </View>
+          <View style={{ flex: 1 }}>
+            <Typography style={styles.title} fontWeight="600">
+              {title}
+            </Typography>
+            <Typography style={styles.description} fontWeight="500">
+              {description}
+            </Typography>
+          </View>
 
-        <View style={{ marginHorizontal: 4 }}>
-          <Icon name="chevron-forward" size={16} />
+          <View style={{ marginHorizontal: 4 }}>
+            <Icon name="chevron-forward" size={16} />
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
+      </TouchableOpacity>
+    );
+  }
+);
+
+SettingItem.displayName = "SettingItem";
 
 const styles = StyleSheet.create({
   root: {

@@ -3,6 +3,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 import { useTheme } from "@react-navigation/native";
+import { Link } from "expo-router";
 import { signOut } from "firebase/auth";
 import { auth } from "firebase-config";
 
@@ -50,13 +51,21 @@ const SettingsContainer = () => {
 
         <View style={{ gap: 30 }}>
           {settingItems.map((item, index) => {
+            const isSignOut = item.title === "Sign Out";
+
             return (
-              <SettingItem
-                {...item}
-                key={index}
-                path=""
-                action={item.title === "Sign Out" ? openLogout : undefined}
-              />
+              <React.Fragment key={index}>
+                {isSignOut ? (
+                  <SettingItem
+                    {...item}
+                    action={item.title === "Sign Out" ? openLogout : undefined}
+                  />
+                ) : (
+                  <Link asChild href={item.path ?? "/"}>
+                    <SettingItem {...item} />
+                  </Link>
+                )}
+              </React.Fragment>
             );
           })}
         </View>

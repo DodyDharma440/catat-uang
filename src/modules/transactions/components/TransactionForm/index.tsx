@@ -193,7 +193,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       reset({
         title,
         note,
-        category: category.id,
+        category: category?.id,
         amount,
         type,
         date: dateTime,

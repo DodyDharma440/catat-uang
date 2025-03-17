@@ -41,12 +41,12 @@ const TransCard: React.FC<TransCardProps> = ({ transaction }) => {
               alignItems: "center",
               width: 50,
               height: 50,
-              backgroundColor: transaction.category.color,
+              backgroundColor: transaction.category?.color ?? "#7B8CDE",
               borderRadius: 12,
             }}
           >
             <IonIcon
-              name={transaction.category.iconName}
+              name={transaction.category?.iconName ?? "apps-outline"}
               color={theme.colors.white}
               size={26}
             />
@@ -57,7 +57,7 @@ const TransCard: React.FC<TransCardProps> = ({ transaction }) => {
             </Typography>
 
             <Typography style={{ color: theme.colors.gray }}>
-              {transaction.category.name}
+              {transaction.category?.name ?? "Lainnya"}
             </Typography>
           </View>
           <View>

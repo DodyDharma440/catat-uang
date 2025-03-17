@@ -15,7 +15,7 @@ export interface ITransaction {
   id: string;
   title: string;
   amount: number;
-  category: ICategory;
+  category?: ICategory;
   date: string;
   time: string;
   note: string;
