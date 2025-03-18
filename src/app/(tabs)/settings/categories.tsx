@@ -1,9 +1,9 @@
 import React from "react";
 
-import { Typography } from "@/common/components";
+import { UserCategories } from "@/modules/settings/components";
 
 const CategoriesScreen = () => {
-  return <Typography>CategoriesScreen</Typography>;
+  return <UserCategories />;
 };
 
 export default CategoriesScreen;

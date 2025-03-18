@@ -6,20 +6,21 @@ import type { RBSheetRef } from "react-native-raw-bottom-sheet";
 import RBSheet from "react-native-raw-bottom-sheet";
 import Toast from "react-native-toast-message";
 
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import { db } from "firebase-config";
 
 import { Button, Container, Input, Typography } from "@/common/components";
 import { useFetchState } from "@/common/hooks";
 import { useUserAuth } from "@/modules/auth/contexts";
 
-import type { ICategoryForm } from "../../interfaces";
+import type { ICategory, ICategoryForm } from "../../interfaces";
 
 type CategoryFormProps = {
   isOpen: boolean;
   onClose: () => void;
   transType: string;
   onCompleted: () => void;
+  editData?: ICategory | null;
 };
 
 const CategoryForm: React.FC<CategoryFormProps> = ({
@@ -27,6 +28,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   onClose,
   transType,
   onCompleted,
+  editData,
 }) => {
   const { user } = useUserAuth();
   const sheetRef = useRef<RBSheetRef>(null);
@@ -43,22 +45,36 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   const submitHandler = async (values: ICategoryForm) => {
     startLoading();
     values.userId = user?.uid ?? "";
+    const baseValues = {
+      userId: user?.uid,
+      iconName: "add",
+      color: "#5C677D",
+    };
 
     try {
       const categoryColName =
         transType === "income" ? "income_categories" : "categories";
-      await addDoc(collection(db, categoryColName), {
-        ...values,
-        iconName: "add",
-        color: "#5C677D",
-      });
+
+      if (editData) {
+        await updateDoc(doc(db, categoryColName, editData.id), {
+          ...values,
+          ...baseValues,
+        });
+      } else {
+        await addDoc(collection(db, categoryColName), {
+          ...values,
+          ...baseValues,
+        });
+      }
+
       Toast.show({
         type: "success",
         text1: "Berhasil",
-        text2: "Kategori baru berhasil ditambahkan",
+        text2: `Kategori berhasil ${editData ? "diperbarui" : "ditambahkan"}`,
       });
       onClose();
       onCompleted();
+      endLoading();
     } catch (error) {
       Toast.show({
         type: "error",
@@ -72,17 +88,22 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   useEffect(() => {
     if (isOpen) {
       sheetRef.current?.open();
-      reset();
+      if (editData) {
+        const { name, userId } = editData;
+        reset({ name, userId });
+      } else {
+        reset();
+      }
     } else {
       sheetRef.current?.close();
     }
-  }, [isOpen, onClose, reset]);
+  }, [editData, isOpen, onClose, reset]);
 
   return (
     <RBSheet ref={sheetRef} onClose={onClose} height={224}>
       <Container>
         <Typography style={{ fontSize: 18, marginBottom: 16 }} fontWeight="700">
-          Tambah Kategori
+          {editData ? "Edit" : "Tambah"} Kategori
         </Typography>
         <View style={{ gap: 16 }}>
           <Controller
@@ -105,7 +126,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             }}
           />
           <Button isLoading={isLoading} onPress={handleSubmit(submitHandler)}>
-            Tambahkan
+            Simpan
           </Button>
         </View>
       </Container>

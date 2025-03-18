@@ -9,7 +9,7 @@ type UseDisclosureDataOptions = {
 
 export const useDisclosureData = <T>(options?: UseDisclosureDataOptions) => {
   const initialState = options?.initialState || false;
-  const closeDelay = options?.closeDelay || 500;
+  const closeDelay = options?.closeDelay || 200;
 
   const [isOpen, handlers] = useDisclosure(initialState);
   const [data, setData] = useState<T | null>(null);

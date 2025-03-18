@@ -3,19 +3,28 @@ import { useCallback, useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "firebase-config";
 
+import { useFetchState } from "@/common/hooks";
 import { useUserAuth } from "@/modules/auth/contexts";
 
 import type { ICategory, TransactionType } from "../../interfaces";
 
 type UseGetCategoriesProps = {
   transType: TransactionType;
+  isUserOnly?: boolean;
 };
 
-export const useGetCategories = ({ transType }: UseGetCategoriesProps) => {
+export const useGetCategories = ({
+  transType,
+  isUserOnly,
+}: UseGetCategoriesProps) => {
   const { user } = useUserAuth();
   const [categories, setCategories] = useState<ICategory[]>([]);
 
+  const fetchState = useFetchState();
+  const { startLoading, endLoading, setError } = fetchState;
+
   const handleGetCategories = useCallback(async () => {
+    startLoading();
     const collectionRef = collection(
       db,
       transType === "income" ? "income_categories" : "categories"
@@ -26,14 +35,16 @@ export const useGetCategories = ({ transType }: UseGetCategoriesProps) => {
     const _categories: ICategory[] = [];
 
     try {
-      const querySnapshot = await getDocs(qAll);
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        _categories.push({
-          ...(data as ICategory),
-          id: doc.id,
+      if (!isUserOnly) {
+        const querySnapshot = await getDocs(qAll);
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          _categories.push({
+            ...(data as ICategory),
+            id: doc.id,
+          });
         });
-      });
+      }
 
       const querySnapshotUser = await getDocs(qUser);
       querySnapshotUser.forEach((doc) => {
@@ -54,17 +65,16 @@ export const useGetCategories = ({ transType }: UseGetCategoriesProps) => {
       }
 
       setCategories(_categories);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log("🚀 ~ handleGetCategories ~ error:", error);
+      endLoading();
+    } catch (error: any) {
+      endLoading();
+      setError(error.message ?? "Terjadi kesalahan");
     }
-  }, [transType, user?.uid]);
+  }, [endLoading, isUserOnly, setError, startLoading, transType, user?.uid]);
 
   useEffect(() => {
-
-
     handleGetCategories();
   }, [handleGetCategories]);
 
-  return { categories , handleGetCategories};
+  return { categories, handleGetCategories, fetchState };
 };
