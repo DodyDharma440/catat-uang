@@ -97,11 +97,12 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
               dayjs().add(-1, "day").format("YYYY-MM-DD")
             );
 
-            const label = isToday
+            let label = isToday
               ? "Hari ini"
               : isYesterday
               ? "Kemarin"
               : dayjs(data.date).format("DD MMM YYYY");
+            label = `${label}/${dayjs(data.date).unix()}`;
 
             if (!grouped[label]) grouped[label] = [];
             grouped[label].push({
@@ -114,8 +115,16 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
 
         setTransactions(
           Object.entries(grouped)
-            .map(([key, value]) => ({ title: key, items: value }))
+            .map(([key, value]) => {
+              const [label, timestamp] = key.split("/");
+              return {
+                title: label,
+                items: value,
+                timestamp: dayjs(Number(timestamp)).unix(),
+              };
+            })
             .filter((g) => g.items.length)
+            .sort((a, b) => b.timestamp - a.timestamp)
         );
         endLoading();
       });

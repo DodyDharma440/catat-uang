@@ -7,7 +7,7 @@ export interface ICategory {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ICategoryForm extends Pick<ICategory, 'name' | 'userId'> {}
+export interface ICategoryForm extends Pick<ICategory, "name" | "userId"> {}
 
 export type TransactionType = "income" | "expense";
 
@@ -29,5 +29,6 @@ export interface ITransactionForm
 
 export type TransactionState = Array<{
   title: string;
+  timestamp: number;
   items: ITransaction[];
 }>;
