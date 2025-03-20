@@ -5,15 +5,20 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useTheme } from "@react-navigation/native";
 
+import { useDisclosure } from "@/common/hooks";
 import { opacityColor } from "@/common/utils/colors";
 
 import { useTransListContext } from "../../contexts";
 import AddButton from "../AddButton";
+import FilterSheet from "../FilterSheet";
 import MonthSelector from "../MonthSelector";
 
 const Navbar = () => {
   const theme = useTheme();
   const { monthYear, setMonthYear } = useTransListContext();
+
+  const [isOpenFilter, { open: openFilter, close: closeFilter }] =
+    useDisclosure();
 
   return (
     <View
@@ -24,7 +29,7 @@ const Navbar = () => {
         marginBottom: 16,
       }}
     >
-      <TouchableOpacity>
+      <TouchableOpacity onPress={openFilter}>
         <View
           style={{
             backgroundColor: theme.colors.white,
@@ -44,6 +49,8 @@ const Navbar = () => {
       </View>
 
       <AddButton />
+
+      <FilterSheet isOpen={isOpenFilter} onClose={closeFilter} />
     </View>
   );
 };

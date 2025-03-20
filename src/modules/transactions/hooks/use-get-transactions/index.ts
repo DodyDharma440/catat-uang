@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import type { Unsubscribe } from "firebase/firestore";
 import {
   collection,
+  doc,
   getDoc,
   limit,
   onSnapshot,
@@ -16,6 +17,7 @@ import { db } from "firebase-config";
 import { useFetchState } from "@/common/hooks";
 import { useUserAuth } from "@/modules/auth/contexts";
 
+import type { TransListFilter } from "../../contexts";
 import type {
   ICategory,
   ITransaction,
@@ -25,6 +27,7 @@ import type {
 type UseGetTransactionsOptions = {
   monthYear?: string;
   limit?: number;
+  filters?: TransListFilter;
 };
 
 export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
@@ -60,6 +63,19 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
       );
     }
 
+    if (options?.filters) {
+      const { category, transType } = options.filters;
+      if (category && category !== "all") {
+        const [collName, categoryId] = category.split("/");
+        const categoryDocRef = doc(db, collName, categoryId);
+        q = query(q, where("category", "==", categoryDocRef));
+      }
+
+      if (transType !== "all") {
+        q = query(q, where("type", "==", transType));
+      }
+    }
+
     if (options?.limit) {
       q = query(q, limit(options?.limit));
     }
@@ -69,6 +85,7 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
         const grouped: Record<string, ITransaction[]> = {};
 
         await Promise.all(
+          // eslint-disable-next-line @typescript-eslint/no-shadow
           querySnapshot.docs.map(async (doc) => {
             const data = doc.data();
             const categoryDoc = await getDoc(data.category);
@@ -112,6 +129,7 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
     }
   }, [
     endLoading,
+    options?.filters,
     options?.limit,
     options?.monthYear,
     setError,

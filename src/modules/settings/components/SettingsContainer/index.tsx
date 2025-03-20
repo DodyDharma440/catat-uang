@@ -3,12 +3,12 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 import { useTheme } from "@react-navigation/native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { auth } from "firebase-config";
 
 import { AlertSheet, Button, Typography } from "@/common/components";
-import { useDisclosure, useRemoveAndReplace } from "@/common/hooks";
+import { useDisclosure } from "@/common/hooks";
 import { useUserAuth } from "@/modules/auth/contexts";
 
 import { settingItems } from "../../constants";
@@ -16,8 +16,8 @@ import SettingItem from "../SettingItem";
 
 const SettingsContainer = () => {
   const theme = useTheme();
+  const { dismissTo } = useRouter();
 
-  const { removeAndReplace } = useRemoveAndReplace();
   const { setUser } = useUserAuth();
 
   const [isOpenLogout, { open: openLogout, close: closeLogout }] =
@@ -25,7 +25,7 @@ const SettingsContainer = () => {
 
   const handleSignOut = async () => {
     await signOut(auth);
-    removeAndReplace("/auth");
+    dismissTo("/auth");
     setUser(null);
   };
 

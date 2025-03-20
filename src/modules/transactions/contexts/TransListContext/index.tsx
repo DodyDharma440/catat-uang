@@ -3,11 +3,9 @@ import { createContext, useContext, useState } from "react";
 
 import dayjs from "dayjs";
 
-import type { TransactionType } from "../../interfaces";
-
-type TransListFilter = {
+export type TransListFilter = {
   category: string | null;
-  transType: TransactionType | null;
+  transType: string | null;
 };
 
 type TransListCtx = {
@@ -39,8 +37,8 @@ export const TransListProvider: FC<TransListProviderProps> = ({ children }) => {
   const [monthYear, setMonthYear] = useState(dayjs().format("YYYY-MM"));
   const [searchValue, setSearchValue] = useState("");
   const [filters, setFilters] = useState<TransListFilter>({
-    category: null,
-    transType: null,
+    category: "all",
+    transType: "all",
   });
 
   return (

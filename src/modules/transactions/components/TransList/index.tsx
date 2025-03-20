@@ -14,10 +14,10 @@ import { useGetTransactions } from "../../hooks";
 import TransCard from "../TransCard";
 
 const TransList = () => {
-  const { searchValue, monthYear } = useTransListContext();
+  const { searchValue, monthYear, filters } = useTransListContext();
 
   const { transactions, isLoading, errorMessage, handleGetTransactions } =
-    useGetTransactions({ monthYear });
+    useGetTransactions({ monthYear, filters });
   const filteredTrans = useMemo(() => {
     return transactions
       .map((t) => {

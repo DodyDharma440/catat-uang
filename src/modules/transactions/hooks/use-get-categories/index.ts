@@ -25,10 +25,8 @@ export const useGetCategories = ({
 
   const handleGetCategories = useCallback(async () => {
     startLoading();
-    const collectionRef = collection(
-      db,
-      transType === "income" ? "income_categories" : "categories"
-    );
+    const colName = transType === "income" ? "income_categories" : "categories";
+    const collectionRef = collection(db, colName);
     const qAll = query(collectionRef, where("userId", "==", ""));
     const qUser = query(collectionRef, where("userId", "==", user?.uid));
 
