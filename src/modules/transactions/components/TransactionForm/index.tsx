@@ -44,16 +44,19 @@ type TransactionFormProps = {
   isReadOnly?: boolean;
   transaction?: ITransaction;
   loaderProps?: Omit<LoaderProps, "children">;
+  backHref?: string;
 };
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
   isReadOnly,
   transaction,
   loaderProps,
+  backHref = "/transactions",
 }) => {
   const { dismissTo } = useRouter();
-  const { transType: transTypeParams } = useLocalSearchParams<{
+  const { transType: transTypeParams, initialDate } = useLocalSearchParams<{
     transType?: string;
+    initialDate?: string;
   }>();
   const [transType, setTransType] = useState(transTypeParams);
 
@@ -198,8 +201,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         type,
         date: dateTime,
       });
+    } else {
+      reset({
+        date: initialDate,
+      });
     }
-  }, [reset, transaction]);
+  }, [initialDate, reset, transaction]);
 
   return (
     <FormProvider {...formMethods}>
@@ -221,7 +228,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               zIndex: 3,
             }}
           >
-            <TouchableOpacity onPress={() => dismissTo("/transactions")}>
+            <TouchableOpacity onPress={() => dismissTo(backHref)}>
               <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
             </TouchableOpacity>
             <View

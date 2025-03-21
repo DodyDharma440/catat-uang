@@ -10,7 +10,11 @@ import { useUserAuth } from "@/modules/auth/contexts";
 import type { ICategory, ITransaction } from "../../interfaces";
 import TransactionForm from "../TransactionForm";
 
-const TransDetail = () => {
+type TransDetailProps = {
+  backHref?: string;
+};
+
+const TransDetail: React.FC<TransDetailProps> = ({ backHref }) => {
   const { user } = useUserAuth();
 
   const { transId } = useLocalSearchParams();
@@ -61,6 +65,7 @@ const TransDetail = () => {
       isReadOnly
       transaction={transaction}
       loaderProps={{ isLoading, error: errorMessage }}
+      backHref={backHref}
     />
   );
 };

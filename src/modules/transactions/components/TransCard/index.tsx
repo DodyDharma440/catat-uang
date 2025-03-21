@@ -14,15 +14,19 @@ import TransCardSkeleton from "./Skeleton";
 
 type TransCardProps = {
   transaction: ITransaction;
+  detailPrefix?: string;
 };
 
-const TransCard: React.FC<TransCardProps> = ({ transaction }) => {
+const TransCard: React.FC<TransCardProps> = ({
+  transaction,
+  detailPrefix = "/transactions",
+}) => {
   const theme = useTheme();
   const isPlus = transaction.type === "income";
 
   return (
     <Link
-      href={`/transactions/detail?transId=${transaction.id}&transType=${transaction.type}`}
+      href={`${detailPrefix}/detail?transId=${transaction.id}&transType=${transaction.type}`}
       asChild
     >
       <TouchableOpacity>

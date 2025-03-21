@@ -26,6 +26,7 @@ import type {
 
 type UseGetTransactionsOptions = {
   monthYear?: string;
+  date?: string;
   limit?: number;
   filters?: TransListFilter;
 };
@@ -61,6 +62,10 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
         where("date", ">=", startDate),
         where("date", "<=", endDate)
       );
+    }
+
+    if (options?.date) {
+      q = query(q, where("date", "==", options.date));
     }
 
     if (options?.filters) {
@@ -138,6 +143,7 @@ export const useGetTransactions = (options?: UseGetTransactionsOptions) => {
     }
   }, [
     endLoading,
+    options?.date,
     options?.filters,
     options?.limit,
     options?.monthYear,

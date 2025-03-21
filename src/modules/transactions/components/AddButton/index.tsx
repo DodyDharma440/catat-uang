@@ -23,9 +23,10 @@ const items = [
 
 type AddButtonProps = {
   customButton?: React.ReactNode;
+  initialDate?: string;
 };
 
-const AddButton: React.FC<AddButtonProps> = ({ customButton }) => {
+const AddButton: React.FC<AddButtonProps> = ({ customButton, initialDate }) => {
   const theme = useTheme();
   const ref = useRef<Popover>(null);
 
@@ -80,9 +81,15 @@ const AddButton: React.FC<AddButtonProps> = ({ customButton }) => {
     >
       <View style={{ paddingVertical: 8, width: 160 }}>
         {items.map((item, index) => {
+          const params = new URLSearchParams();
+          params.append("transType", item.value);
+          if (initialDate) {
+            params.append("initialDate", initialDate);
+          }
+
           return (
             <React.Fragment key={item.value}>
-              <Link href={`/transactions/add?transType=${item.value}`} asChild>
+              <Link href={`/transactions/add?${params.toString()}`} asChild>
                 <TouchableOpacity
                   onPress={() => ref.current?.requestClose()}
                   style={{

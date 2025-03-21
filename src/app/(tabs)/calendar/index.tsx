@@ -1,11 +1,10 @@
 import React from "react";
 
-import { Text } from "react-native";
-
 import { withAuth } from "@/common/hocs";
+import { CalendarContainer } from "@/modules/calendar/components";
 
 const CalendarScreen = () => {
-  return <Text>CalendarScreen</Text>;
+  return <CalendarContainer />;
 };
 
 export default withAuth(CalendarScreen);
