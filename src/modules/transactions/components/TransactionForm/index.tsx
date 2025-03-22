@@ -51,7 +51,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   transaction,
   loaderProps,
 }) => {
-  const { dismissTo, push, dismiss } = useRouter();
+  const { dismissTo, push, dismiss, canDismiss } = useRouter();
 
   const {
     transType: transTypeParams,
@@ -97,7 +97,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
   const handleBack = () => {
     if (routeRef && !routeRef?.startsWith("/transactions")) {
-      dismiss();
+      if (canDismiss()) {
+        dismiss();
+      } else {
+        dismissTo("/transactions");
+      }
       push(routeRef);
     } else {
       dismissTo("/transactions");

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
@@ -15,9 +15,12 @@ import {
 import { AddButton, TransCard } from "@/modules/transactions/components";
 import { useGetTransactions } from "@/modules/transactions/hooks";
 
+import Calendar from "../Calendar";
+
 const CalendarContainer = () => {
   const theme = useTheme();
-  const [activeDate] = useState(dayjs().add(-2, "day").format("YYYY-MM-DD"));
+  const [activeDate, setActiveDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const insets = useSafeAreaInsets();
 
   const { transactions, isLoading, errorMessage, handleGetTransactions } =
     useGetTransactions({
@@ -28,20 +31,24 @@ const CalendarContainer = () => {
     <View style={{ flex: 1 }}>
       <View
         style={{
-          height: "50%",
+          height: "52%",
           backgroundColor: theme.colors.primary,
           borderBottomStartRadius: 24,
           borderBottomEndRadius: 24,
         }}
       >
-        <SafeAreaView>
-          <Container>
-            <Typography>HELLO</Typography>
+        <View style={{ flex: 1, paddingTop: insets.top }}>
+          <Container style={{ flex: 1 }}>
+            <Calendar value={activeDate} onChange={setActiveDate} />
           </Container>
-        </SafeAreaView>
+        </View>
       </View>
 
-      <SafeAreaView edges={["bottom", "left", "right"]}>
+      <View
+        style={{
+          height: "48%",
+        }}
+      >
         <Container>
           <View
             style={{
@@ -91,7 +98,7 @@ const CalendarContainer = () => {
             </Loader>
           </Container>
         </RefreshableScrollView>
-      </SafeAreaView>
+      </View>
     </View>
   );
 };
