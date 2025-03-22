@@ -44,19 +44,23 @@ type TransactionFormProps = {
   isReadOnly?: boolean;
   transaction?: ITransaction;
   loaderProps?: Omit<LoaderProps, "children">;
-  backHref?: string;
 };
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
   isReadOnly,
   transaction,
   loaderProps,
-  backHref = "/transactions",
 }) => {
-  const { dismissTo } = useRouter();
-  const { transType: transTypeParams, initialDate } = useLocalSearchParams<{
+  const { dismissTo, push, dismiss } = useRouter();
+
+  const {
+    transType: transTypeParams,
+    initialDate,
+    ref: routeRef,
+  } = useLocalSearchParams<{
     transType?: string;
     initialDate?: string;
+    ref?: string;
   }>();
   const [transType, setTransType] = useState(transTypeParams);
 
@@ -90,6 +94,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     startLoading: startLoadingDelete,
     endLoading: endLoadingDelete,
   } = useFetchState();
+
+  const handleBack = () => {
+    if (routeRef && !routeRef?.startsWith("/transactions")) {
+      dismiss();
+      push(routeRef);
+    } else {
+      dismissTo("/transactions");
+    }
+  };
 
   const submitHandler = async (values: ITransactionForm) => {
     setIsLoading(true);
@@ -140,7 +153,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       }
 
       setIsLoading(false);
-      dismissTo("/transactions");
+      handleBack();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log("🚀 ~ submitHandler ~ error:", error);
@@ -172,7 +185,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           text2: "Catatan transaksi berhasil dihapus",
         });
         closeDelete();
-        dismissTo("/transactions");
+        handleBack();
         endLoadingDelete();
       } catch (error) {
         Toast.show({
@@ -228,7 +241,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               zIndex: 3,
             }}
           >
-            <TouchableOpacity onPress={() => dismissTo(backHref)}>
+            <TouchableOpacity onPress={handleBack}>
               <IonIcon name="arrow-back" color={theme.colors.white} size={24} />
             </TouchableOpacity>
             <View

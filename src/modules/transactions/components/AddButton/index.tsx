@@ -24,9 +24,14 @@ const items = [
 type AddButtonProps = {
   customButton?: React.ReactNode;
   initialDate?: string;
+  routeRef?: string;
 };
 
-const AddButton: React.FC<AddButtonProps> = ({ customButton, initialDate }) => {
+const AddButton: React.FC<AddButtonProps> = ({
+  customButton,
+  initialDate,
+  routeRef,
+}) => {
   const theme = useTheme();
   const ref = useRef<Popover>(null);
 
@@ -85,6 +90,10 @@ const AddButton: React.FC<AddButtonProps> = ({ customButton, initialDate }) => {
           params.append("transType", item.value);
           if (initialDate) {
             params.append("initialDate", initialDate);
+          }
+
+          if (routeRef) {
+            params.append("ref", routeRef);
           }
 
           return (

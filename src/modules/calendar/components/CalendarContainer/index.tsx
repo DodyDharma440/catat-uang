@@ -17,7 +17,7 @@ import { useGetTransactions } from "@/modules/transactions/hooks";
 
 const CalendarContainer = () => {
   const theme = useTheme();
-  const [activeDate] = useState(dayjs().add(-1, "day").format("YYYY-MM-DD"));
+  const [activeDate] = useState(dayjs().add(-2, "day").format("YYYY-MM-DD"));
 
   const { transactions, isLoading, errorMessage, handleGetTransactions } =
     useGetTransactions({
@@ -52,7 +52,7 @@ const CalendarContainer = () => {
             <Typography style={{ flex: 1, fontSize: 18 }} fontWeight="700">
               {dayjs(activeDate).format("DD MMMM YYYY")}
             </Typography>
-            <AddButton initialDate={activeDate} />
+            <AddButton initialDate={activeDate} routeRef="/calendar" />
           </View>
         </Container>
 
@@ -78,7 +78,7 @@ const CalendarContainer = () => {
                       {trans.items.map((item, i) => {
                         return (
                           <TransCard
-                            detailPrefix="/calendar"
+                            detailRef="/calendar"
                             key={i}
                             transaction={item}
                           />
