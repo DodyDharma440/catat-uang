@@ -6,7 +6,7 @@ import IonIcon from "react-native-vector-icons/Ionicons";
 import { useTheme } from "@react-navigation/native";
 import dayjs from "dayjs";
 
-import { Button, Typography } from "@/common/components";
+import { Typography } from "@/common/components";
 import { opacityColor } from "@/common/utils/colors";
 import { MonthSelector } from "@/modules/transactions/components";
 
@@ -33,6 +33,20 @@ const Calendar: React.FC<CalendarProps> = ({ value, onChange }) => {
     ];
   }, [monthYear]);
 
+  const canNextMonth = useMemo(() => {
+    return dayjs(`${monthYear}-01`).isBefore(dayjs(), "month");
+  }, [monthYear]);
+
+  const handleNextMonth = () => {
+    if (canNextMonth) {
+      setMonthYear(dayjs(`${monthYear}-01`).add(1, "month").format("YYYY-MM"));
+    }
+  };
+
+  const handlePrevMonth = () => {
+    setMonthYear(dayjs(`${monthYear}-01`).add(-1, "month").format("YYYY-MM"));
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <View
@@ -40,6 +54,7 @@ const Calendar: React.FC<CalendarProps> = ({ value, onChange }) => {
           marginBottom: 16,
           flexDirection: "row",
           alignItems: "center",
+          paddingHorizontal: 8,
         }}
       >
         <View>
@@ -68,14 +83,27 @@ const Calendar: React.FC<CalendarProps> = ({ value, onChange }) => {
           />
         </View>
         <View
-          style={{ flexDirection: "row", flex: 1, justifyContent: "flex-end" }}
+          style={{
+            flexDirection: "row",
+            flex: 1,
+            justifyContent: "flex-end",
+            gap: 20,
+          }}
         >
-          <Button isCompact>
-            <IonIcon name="chevron-back" size={18} />
-          </Button>
-          <Button isCompact>
-            <IonIcon name="chevron-forward" size={18} />
-          </Button>
+          <TouchableOpacity onPress={handlePrevMonth}>
+            <IonIcon name="chevron-back" size={18} color={theme.colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={!canNextMonth}
+            onPress={handleNextMonth}
+            style={{ opacity: canNextMonth ? 1 : 0.6 }}
+          >
+            <IonIcon
+              name="chevron-forward"
+              size={18}
+              color={theme.colors.white}
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -106,11 +134,16 @@ const Calendar: React.FC<CalendarProps> = ({ value, onChange }) => {
             data={daysArray}
             numColumns={7}
             renderItem={({ item }) => {
-              const date = dayjs(`${monthYear}-${item}`).format("YYYY-MM-DD");
+              const itemDate = `${monthYear}-${item}`;
+              const date = dayjs(itemDate).format("YYYY-MM-DD");
               const isSelected = value === date;
+              const isFuture = dayjs(itemDate).isAfter(dayjs(), "day");
+
               return (
                 <TouchableOpacity
-                  onPress={() => onChange(date)}
+                  onPress={() => {
+                    if (!isFuture) onChange(date);
+                  }}
                   style={{
                     flex: 1,
                     height: item ? 38 : 0,
@@ -122,6 +155,7 @@ const Calendar: React.FC<CalendarProps> = ({ value, onChange }) => {
                     backgroundColor: isSelected
                       ? theme.colors.white
                       : "transparent",
+                    opacity: isFuture ? 0.6 : 1,
                   }}
                 >
                   <Typography
