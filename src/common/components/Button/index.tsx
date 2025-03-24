@@ -44,6 +44,7 @@ const Button = forwardRef<View, ButtonProps>(
       innerStyle,
       leftIcon,
       rightIcon,
+      disabled,
       ...props
     },
     ref
@@ -90,11 +91,11 @@ const Button = forwardRef<View, ButtonProps>(
         {...props}
         style={[
           fullWidth ? { width: "100%" } : {},
-          { opacity: isLoading ? 0.6 : 1 },
+          { opacity: isLoading || disabled ? 0.6 : 1 },
           style,
         ]}
         ref={ref}
-        disabled={props.disabled || isLoading}
+        disabled={disabled || isLoading}
       >
         <View
           style={[

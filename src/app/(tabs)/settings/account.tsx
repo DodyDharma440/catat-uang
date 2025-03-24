@@ -1,9 +1,10 @@
 import React from "react";
 
-import { Typography } from "@/common/components";
+import { withAuth } from "@/common/hocs";
+import { AccountContainer } from "@/modules/settings/components";
 
 const AccountScreen = () => {
-  return <Typography>AccountScreen</Typography>;
+  return <AccountContainer />;
 };
 
-export default AccountScreen;
+export default withAuth(AccountScreen);

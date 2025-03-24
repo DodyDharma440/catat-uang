@@ -9,20 +9,29 @@ import Typography from "../Typography";
 
 type AvatarProps = {
   name?: string | null;
+  size?: number;
 } & ViewProps;
 
 const Avatar = forwardRef<View, AvatarProps>(
-  ({ style, name, ...props }, ref) => {
+  ({ style, name, size = 40, ...props }, ref) => {
     const theme = useTheme();
 
     return (
       <View
-        style={[styles.root, { borderColor: theme.colors.primary }, style]}
+        style={[
+          styles.root,
+          { borderColor: theme.colors.primary },
+          { width: size, height: size },
+          style,
+        ]}
         ref={ref}
         {...props}
       >
         <View style={[styles.inner, { backgroundColor: theme.colors.primary }]}>
-          <Typography fontWeight="600" style={styles.text}>
+          <Typography
+            fontWeight="600"
+            style={[styles.text, { fontSize: size / 2 }]}
+          >
             {name?.trim()[0].toUpperCase() ?? "A"}
           </Typography>
         </View>
@@ -33,8 +42,6 @@ const Avatar = forwardRef<View, AvatarProps>(
 
 const styles = StyleSheet.create({
   root: {
-    width: 40,
-    height: 40,
     borderRadius: "50%",
     borderWidth: 1,
     borderStyle: "solid",
@@ -48,7 +55,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   text: {
-    fontSize: 18,
     color: "#fff",
   },
 });
