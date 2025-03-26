@@ -40,6 +40,7 @@ const AccountForm = () => {
           text1: "Berhasil",
           text2: "Informasi akun berhasil diperbarui",
         });
+        user.reload();
       } catch (error) {
         Toast.show({
           type: "error",
@@ -68,6 +69,7 @@ const AccountForm = () => {
             text1: "Berhasil",
             text2: "Informasi akun berhasil diperbarui",
           });
+          user.reload();
         }
       } catch (error) {
         // console.log("🚀 ~ submitHandler ~ error:", error);
