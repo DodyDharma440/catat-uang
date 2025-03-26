@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import Toast from "react-native-toast-message";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
@@ -137,34 +137,36 @@ const UserCategories = () => {
         error={errorMessage}
         isEmpty={!categories.length}
       >
-        <View>
-          {categories.map((c) => (
-            <View
-              key={c.id}
-              style={{
-                paddingVertical: 14,
-                paddingHorizontal: 24,
-                borderRadius: 12,
-                flexDirection: "row",
-                backgroundColor: theme.colors.white,
-                alignItems: "center",
-                gap: 16,
-              }}
-            >
-              <Typography fontWeight="500" style={{ flex: 1, fontSize: 16 }}>
-                {c.name}
-              </Typography>
-              <View style={{ flexDirection: "row", gap: 6 }}>
-                <Button isCompact color="blue" onPress={() => open(c)}>
-                  <IonIcon name="pencil" />
-                </Button>
-                <Button isCompact color="red" onPress={() => openDelete(c)}>
-                  <IonIcon name="trash" />
-                </Button>
+        <ScrollView>
+          <View style={{ gap: 12 }}>
+            {categories.map((c) => (
+              <View
+                key={c.id}
+                style={{
+                  paddingVertical: 14,
+                  paddingHorizontal: 24,
+                  borderRadius: 12,
+                  flexDirection: "row",
+                  backgroundColor: theme.colors.white,
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+                <Typography fontWeight="500" style={{ flex: 1, fontSize: 16 }}>
+                  {c.name}
+                </Typography>
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  <Button isCompact color="blue" onPress={() => open(c)}>
+                    <IonIcon name="pencil" />
+                  </Button>
+                  <Button isCompact color="red" onPress={() => openDelete(c)}>
+                    <IonIcon name="trash" />
+                  </Button>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        </ScrollView>
       </Loader>
 
       <CategoryForm
@@ -174,6 +176,7 @@ const UserCategories = () => {
         onCompleted={handleGetCategories}
         editData={editData}
       />
+
       <AlertSheet
         isOpen={isOpenDelete}
         title="Hapus Kategori"
