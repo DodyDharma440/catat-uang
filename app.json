@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "catat-uang",
+    "name": "Catat Uang",
     "slug": "catat-uang",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.dodiaditya.catatuang"
     },
     "web": {
       "bundler": "metro",
@@ -32,7 +33,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#803dff"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "splash": {
       "image": "./assets/images/splash-icon.png",
@@ -41,6 +43,14 @@
     },
     "experiments": {
       "typedRoutes": false
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3af06b95-a997-4aab-9d05-fd903d2ff494"
+      }
     }
   }
 }
